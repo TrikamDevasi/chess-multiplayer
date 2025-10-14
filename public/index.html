@@ -8,7 +8,21 @@
 </head>
 <body>
     <div class="container">
-        <h1>♟️ Chess Online</h1>
+        <div class="header-section">
+            <h1>♟️ Chess Online</h1>
+            
+            <!-- Theme Selector -->
+            <div class="theme-selector">
+                <label for="themeSelect">🎨 Theme:</label>
+                <select id="themeSelect" class="theme-dropdown">
+                    <option value="classic">Classic</option>
+                    <option value="modern">Modern Blue</option>
+                    <option value="wooden">Wooden</option>
+                    <option value="dark">Dark Mode</option>
+                    <option value="green">Tournament Green</option>
+                </select>
+            </div>
+        </div>
         
         <!-- Connection Status -->
         <div id="connectionStatus" class="status-bar">
@@ -77,6 +91,7 @@
                     </div>
 
                     <div class="game-controls">
+                        <button id="flipBoardBtn" class="btn btn-secondary">🔄 Flip Board</button>
                         <button id="resetGameBtn" class="btn btn-secondary">New Game</button>
                         <button id="leaveRoomBtn" class="btn btn-danger">Leave Room</button>
                     </div>

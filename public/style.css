@@ -19,12 +19,59 @@ body {
     width: 100%;
 }
 
-h1 {
-    text-align: center;
-    color: white;
+/* Header Section */
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+h1 {
+    color: white;
     font-size: 2.5rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin: 0;
+}
+
+/* Theme Selector */
+.theme-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.theme-selector label {
+    font-weight: 600;
+    color: #1e3c72;
+    font-size: 1rem;
+}
+
+.theme-dropdown {
+    padding: 8px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-weight: 500;
+}
+
+.theme-dropdown:hover {
+    border-color: #1e3c72;
+}
+
+.theme-dropdown:focus {
+    outline: none;
+    border-color: #1e3c72;
+    box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
 }
 
 /* Status Bar */
@@ -383,10 +430,19 @@ input[type="text"]:focus {
     grid-template-rows: repeat(8, 1fr);
     width: 600px;
     height: 600px;
-    border: 3px solid #1e3c72;
+    border: 4px solid var(--board-border);
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.6s ease;
+}
+
+.chess-board.flipped {
+    transform: rotate(180deg);
+}
+
+.chess-board.flipped .square {
+    transform: rotate(180deg);
 }
 
 .square {
@@ -400,17 +456,63 @@ input[type="text"]:focus {
     position: relative;
 }
 
+/* Board Themes */
 .square.light {
-    background: #f0d9b5;
+    background: var(--light-square, #f0d9b5);
 }
 
 .square.dark {
-    background: #b58863;
+    background: var(--dark-square, #b58863);
+}
+
+/* Classic Theme (default) */
+body {
+    --light-square: #f0d9b5;
+    --dark-square: #b58863;
+    --board-border: #1e3c72;
+}
+
+/* Modern Blue Theme */
+body.theme-modern {
+    --light-square: #e8eef7;
+    --dark-square: #5b7bb4;
+    --board-border: #2a4a7f;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Wooden Theme */
+body.theme-wooden {
+    --light-square: #f4e4c1;
+    --dark-square: #8b5a3c;
+    --board-border: #5d3a1a;
+    background: linear-gradient(135deg, #8b6f47 0%, #5d4e37 100%);
+}
+
+/* Dark Mode Theme */
+body.theme-dark {
+    --light-square: #4a4a4a;
+    --dark-square: #2d2d2d;
+    --board-border: #1a1a1a;
+    background: linear-gradient(135deg, #2c3e50 0%, #1a1a1a 100%);
+}
+
+/* Tournament Green Theme */
+body.theme-green {
+    --light-square: #eeeed2;
+    --dark-square: #769656;
+    --board-border: #4a6741;
+    background: linear-gradient(135deg, #3d5a3d 0%, #2d4a2d 100%);
 }
 
 .square.selected {
     background: #baca44 !important;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(186, 202, 68, 0.6);
+    animation: selectedPulse 1.5s infinite;
+}
+
+@keyframes selectedPulse {
+    0%, 100% { box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(186, 202, 68, 0.6); }
+    50% { box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(186, 202, 68, 0.8); }
 }
 
 .square.legal-move::after {
@@ -432,7 +534,13 @@ input[type="text"]:focus {
 }
 
 .square:hover:not(.no-hover) {
-    filter: brightness(1.1);
+    filter: brightness(1.15);
+    transform: scale(1.02);
+    transition: all 0.15s ease;
+}
+
+.square:active {
+    transform: scale(0.98);
 }
 
 .square.last-move {
@@ -515,8 +623,18 @@ input[type="text"]:focus {
 }
 
 @media (max-width: 768px) {
+    .header-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
     h1 {
         font-size: 2rem;
+    }
+    
+    .theme-selector {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .menu-card, .waiting-card {
@@ -540,5 +658,15 @@ input[type="text"]:focus {
 
     .game-container {
         padding: 15px;
+    }
+    
+    .game-controls {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .game-controls .btn {
+        flex: 1 1 45%;
+        min-width: 120px;
     }
 }

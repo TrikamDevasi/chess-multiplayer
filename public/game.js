@@ -48,6 +48,10 @@ const gameOverTitle = document.getElementById('gameOverTitle');
 const gameOverMessage = document.getElementById('gameOverMessage');
 const playAgainBtn = document.getElementById('playAgainBtn');
 
+const themeSelect = document.getElementById('themeSelect');
+const flipBoardBtn = document.getElementById('flipBoardBtn');
+let isBoardFlipped = false;
+
 // Initialize WebSocket connection
 function connectWebSocket() {
     if (!connectionStartTime) {
@@ -195,6 +199,11 @@ function showGameScreen() {
     showScreen(gameScreen);
     initializeBoard();
     updatePlayerInfo();
+    
+    // Auto-flip board for black player
+    if (playerColor === 'black' && !isBoardFlipped) {
+        flipBoard();
+    }
 }
 
 function resetToMenu() {
@@ -519,6 +528,41 @@ roomIdInput.addEventListener('keypress', (e) => {
         joinRoomConfirmBtn.click();
     }
 });
+
+// Theme Management
+function changeTheme(theme) {
+    // Remove all theme classes
+    document.body.classList.remove('theme-classic', 'theme-modern', 'theme-wooden', 'theme-dark', 'theme-green');
+    
+    // Add selected theme class
+    if (theme !== 'classic') {
+        document.body.classList.add(`theme-${theme}`);
+    }
+    
+    // Save theme preference
+    localStorage.setItem('chessTheme', theme);
+}
+
+// Board Flip
+function flipBoard() {
+    isBoardFlipped = !isBoardFlipped;
+    chessBoard.classList.toggle('flipped');
+}
+
+// Theme selector event
+themeSelect.addEventListener('change', (e) => {
+    changeTheme(e.target.value);
+});
+
+// Flip board button
+flipBoardBtn.addEventListener('click', () => {
+    flipBoard();
+});
+
+// Load saved theme on startup
+const savedTheme = localStorage.getItem('chessTheme') || 'classic';
+themeSelect.value = savedTheme;
+changeTheme(savedTheme);
 
 // Initialize
 connectWebSocket();
