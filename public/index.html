@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Multiplayer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>♟️ Chess Online</h1>
+        
+        <!-- Connection Status -->
+        <div id="connectionStatus" class="status-bar">
+            <span class="status-dot"></span>
+            <span id="statusText">Connecting...</span>
+        </div>
+
+        <!-- Menu Screen -->
+        <div id="menuScreen" class="screen active">
+            <div class="menu-card">
+                <h2>Welcome to Chess!</h2>
+                <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+                
+                <div class="button-group">
+                    <button id="createRoomBtn" class="btn btn-primary">Create Room</button>
+                    <button id="joinRoomBtn" class="btn btn-secondary">Join Room</button>
+                </div>
+
+                <div id="joinRoomSection" class="hidden">
+                    <input type="text" id="roomIdInput" placeholder="Enter Room ID" maxlength="6">
+                    <button id="joinRoomConfirmBtn" class="btn btn-success">Join</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waiting Screen -->
+        <div id="waitingScreen" class="screen">
+            <div class="waiting-card">
+                <h2>Room Created!</h2>
+                <p>Share this Room ID with your opponent:</p>
+                <div class="room-id-display">
+                    <span id="displayRoomId"></span>
+                    <button id="copyRoomIdBtn" class="btn-icon" title="Copy Room ID">📋</button>
+                </div>
+                <div class="waiting-animation">
+                    <div class="spinner"></div>
+                    <p>Waiting for opponent...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-container">
+                <div class="game-sidebar">
+                    <div class="player-info">
+                        <div id="blackPlayerInfo" class="player-card">
+                            <span class="player-color">⚫</span>
+                            <span class="player-name">Black</span>
+                        </div>
+                        <div id="whitePlayerInfo" class="player-card">
+                            <span class="player-color">⚪</span>
+                            <span class="player-name">White</span>
+                        </div>
+                    </div>
+                    
+                    <div id="turnIndicator" class="turn-indicator">
+                        <span id="currentTurnText">White's Turn</span>
+                    </div>
+
+                    <div id="gameStatus" class="game-status"></div>
+
+                    <div class="move-history">
+                        <h3>Move History</h3>
+                        <div id="moveList" class="move-list"></div>
+                    </div>
+
+                    <div class="game-controls">
+                        <button id="resetGameBtn" class="btn btn-secondary">New Game</button>
+                        <button id="leaveRoomBtn" class="btn btn-danger">Leave Room</button>
+                    </div>
+                </div>
+
+                <div class="chess-board-container">
+                    <div id="chessBoard" class="chess-board"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="gameOverModal" class="modal hidden">
+            <div class="modal-content">
+                <h2 id="gameOverTitle">Game Over!</h2>
+                <p id="gameOverMessage"></p>
+                <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
