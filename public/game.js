@@ -70,6 +70,13 @@ function connectWebSocket() {
         console.log('Connected to server');
         connectionAttempts = 0;
         connectionStartTime = null;
+        
+        // Clear any pending retry timeouts
+        if (retryTimeout) {
+            clearTimeout(retryTimeout);
+            retryTimeout = null;
+        }
+        
         updateConnectionStatus('connected');
     };
 
@@ -97,6 +104,11 @@ function connectWebSocket() {
 
 function updateConnectionStatus(status, attempt = 0) {
     connectionStatus.className = `status-bar ${status}`;
+    
+    // Disable/enable buttons based on connection
+    const isConnected = status === 'connected';
+    createRoomBtn.disabled = !isConnected;
+    joinRoomConfirmBtn.disabled = !isConnected;
     
     if (status === 'connected') {
         statusText.innerHTML = '✓ Connected';
@@ -213,6 +225,13 @@ function resetToMenu() {
     gameState = null;
     selectedSquare = null;
     legalMoves = [];
+    
+    // Reset board flip state
+    if (isBoardFlipped) {
+        chessBoard.classList.remove('flipped');
+        isBoardFlipped = false;
+    }
+    
     showScreen(menuScreen);
     joinRoomSection.classList.add('hidden');
     roomIdInput.value = '';
@@ -471,7 +490,15 @@ function hideGameOver() {
 
 // Event Handlers
 createRoomBtn.addEventListener('click', () => {
-    const playerName = playerNameInput.value.trim() || 'Player';
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert('Not connected to server. Please wait...');
+        return;
+    }
+    
+    let playerName = playerNameInput.value.trim() || 'Player';
+    // Validate and sanitize player name
+    playerName = playerName.substring(0, 20).replace(/[<>"']/g, '');
+    
     ws.send(JSON.stringify({
         type: 'create_room',
         playerName
@@ -483,13 +510,27 @@ joinRoomBtn.addEventListener('click', () => {
 });
 
 joinRoomConfirmBtn.addEventListener('click', () => {
-    const roomId = roomIdInput.value.trim().toUpperCase();
-    const playerName = playerNameInput.value.trim() || 'Player';
+    if (!ws || ws.readyState !== WebSocket.OPEN) {
+        alert('Not connected to server. Please wait...');
+        return;
+    }
     
+    const roomId = roomIdInput.value.trim().toUpperCase();
+    let playerName = playerNameInput.value.trim() || 'Player';
+    
+    // Validate room ID
     if (!roomId) {
         alert('Please enter a room ID');
         return;
     }
+    
+    if (!/^[A-Z0-9]{6}$/.test(roomId)) {
+        alert('Invalid room ID format. Must be 6 characters.');
+        return;
+    }
+    
+    // Validate and sanitize player name
+    playerName = playerName.substring(0, 20).replace(/[<>"']/g, '');
 
     ws.send(JSON.stringify({
         type: 'join_room',

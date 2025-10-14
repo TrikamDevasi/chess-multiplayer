@@ -225,6 +225,17 @@ input[type="text"]:focus {
     transform: translateY(0);
 }
 
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.btn:disabled:hover {
+    transform: none !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
 .btn-primary {
     background: #1e3c72;
     color: white;

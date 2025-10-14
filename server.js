@@ -121,9 +121,14 @@ wss.on('connection', (ws) => {
 
             switch (data.type) {
                 case 'create_room':
+                    // Sanitize player name
+                    const sanitizedCreateName = (data.playerName || 'Player')
+                        .substring(0, 20)
+                        .replace(/[<>"']/g, '');
+                    
                     const roomId = generateRoomId();
                     const newRoom = new ChessRoom(roomId);
-                    const createResult = newRoom.addPlayer(ws, data.playerName);
+                    const createResult = newRoom.addPlayer(ws, sanitizedCreateName);
                     rooms.set(roomId, newRoom);
                     currentRoom = roomId;
                     playerColor = createResult.color;
@@ -140,6 +145,15 @@ wss.on('connection', (ws) => {
                     break;
 
                 case 'join_room':
+                    // Validate room ID format
+                    if (!data.roomId || !/^[A-Z0-9]{6}$/.test(data.roomId)) {
+                        ws.send(JSON.stringify({
+                            type: 'error',
+                            message: 'Invalid room ID format'
+                        }));
+                        return;
+                    }
+                    
                     const room = rooms.get(data.roomId);
                     if (!room) {
                         ws.send(JSON.stringify({
@@ -149,7 +163,12 @@ wss.on('connection', (ws) => {
                         return;
                     }
 
-                    const joinResult = room.addPlayer(ws, data.playerName);
+                    // Sanitize player name
+                    const sanitizedJoinName = (data.playerName || 'Player')
+                        .substring(0, 20)
+                        .replace(/[<>"']/g, '');
+                    
+                    const joinResult = room.addPlayer(ws, sanitizedJoinName);
                     currentRoom = data.roomId;
                     playerColor = joinResult.color;
                     playerRole = joinResult.role;
@@ -276,7 +295,20 @@ wss.on('connection', (ws) => {
 });
 
 function generateRoomId() {
-    return Math.random().toString(36).substring(2, 8).toUpperCase();
+    // Generate unique room ID with collision check
+    let roomId;
+    let attempts = 0;
+    do {
+        roomId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        attempts++;
+        if (attempts > 100) {
+            // Fallback to timestamp-based ID if too many collisions
+            roomId = Date.now().toString(36).substring(-6).toUpperCase();
+            break;
+        }
+    } while (rooms.has(roomId));
+    
+    return roomId;
 }
 
 const PORT = process.env.PORT || 3000;
