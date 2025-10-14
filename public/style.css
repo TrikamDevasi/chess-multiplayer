@@ -30,13 +30,19 @@ h1 {
 /* Status Bar */
 .status-bar {
     background: rgba(255, 255, 255, 0.95);
-    padding: 10px 20px;
+    padding: 15px 20px;
     border-radius: 10px;
     margin-bottom: 20px;
     display: flex;
     align-items: center;
     gap: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.status-bar #statusText {
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 .status-dot {
@@ -47,19 +53,61 @@ h1 {
     animation: pulse 2s infinite;
 }
 
+.status-bar.connected {
+    background: rgba(16, 185, 129, 0.1);
+    border: 2px solid #10b981;
+}
+
 .status-bar.connected .status-dot {
     background: #10b981;
     animation: none;
 }
 
-.status-bar.disconnected .status-dot {
+.status-bar.connecting {
+    background: rgba(251, 191, 36, 0.1);
+    border: 2px solid #fbbf24;
+}
+
+.status-bar.connecting .status-dot {
+    background: #fbbf24;
+    animation: pulse 1.5s infinite;
+}
+
+.status-bar.reconnecting {
+    background: rgba(59, 130, 246, 0.1);
+    border: 2px solid #3b82f6;
+}
+
+.status-bar.reconnecting .status-dot {
+    background: #3b82f6;
+    animation: spin 1s linear infinite;
+}
+
+.status-bar.disconnected,
+.status-bar.failed {
+    background: rgba(239, 68, 68, 0.1);
+    border: 2px solid #ef4444;
+}
+
+.status-bar.disconnected .status-dot,
+.status-bar.failed .status-dot {
     background: #ef4444;
     animation: none;
 }
 
 @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+    0%, 100% { 
+        opacity: 1; 
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.5; 
+        transform: scale(1.1);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
 
 /* Screens */

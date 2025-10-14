@@ -6,6 +6,10 @@ let currentRoomId = null;
 let gameState = null;
 let selectedSquare = null;
 let legalMoves = [];
+let connectionAttempts = 0;
+let maxRetries = 10;
+let retryTimeout = null;
+let connectionStartTime = null;
 
 // Chess piece Unicode characters
 const PIECES = {
@@ -46,13 +50,22 @@ const playAgainBtn = document.getElementById('playAgainBtn');
 
 // Initialize WebSocket connection
 function connectWebSocket() {
+    if (!connectionStartTime) {
+        connectionStartTime = Date.now();
+    }
+    
+    connectionAttempts++;
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}`;
+    
+    updateConnectionStatus('connecting', connectionAttempts);
     
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
         console.log('Connected to server');
+        connectionAttempts = 0;
+        connectionStartTime = null;
         updateConnectionStatus('connected');
     };
 
@@ -63,24 +76,41 @@ function connectWebSocket() {
 
     ws.onerror = (error) => {
         console.error('WebSocket error:', error);
-        updateConnectionStatus('disconnected');
     };
 
     ws.onclose = () => {
         console.log('Disconnected from server');
-        updateConnectionStatus('disconnected');
-        setTimeout(connectWebSocket, 3000);
+        
+        if (connectionAttempts < maxRetries) {
+            updateConnectionStatus('reconnecting', connectionAttempts);
+            const delay = Math.min(3000 + (connectionAttempts * 1000), 10000);
+            retryTimeout = setTimeout(connectWebSocket, delay);
+        } else {
+            updateConnectionStatus('failed');
+        }
     };
 }
 
-function updateConnectionStatus(status) {
+function updateConnectionStatus(status, attempt = 0) {
     connectionStatus.className = `status-bar ${status}`;
+    
     if (status === 'connected') {
-        statusText.textContent = 'Connected';
-    } else if (status === 'disconnected') {
-        statusText.textContent = 'Disconnected';
+        statusText.innerHTML = '✓ Connected';
+    } else if (status === 'connecting') {
+        if (attempt === 1) {
+            statusText.innerHTML = '⏳ Connecting to server...';
+        } else if (attempt <= 3) {
+            statusText.innerHTML = '⏳ Waking up server... (this may take 30 seconds)';
+        } else {
+            const elapsed = Math.floor((Date.now() - connectionStartTime) / 1000);
+            statusText.innerHTML = `⏳ Still waking up... (${elapsed}s elapsed)`;
+        }
+    } else if (status === 'reconnecting') {
+        statusText.innerHTML = `🔄 Reconnecting... (attempt ${attempt}/${maxRetries})`;
+    } else if (status === 'failed') {
+        statusText.innerHTML = '❌ Connection failed. <a href="javascript:location.reload()" style="color: #1e3c72; text-decoration: underline;">Refresh page</a>';
     } else {
-        statusText.textContent = 'Connecting...';
+        statusText.innerHTML = '⚠️ Disconnected';
     }
 }
 
