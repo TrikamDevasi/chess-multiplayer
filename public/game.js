@@ -65,6 +65,8 @@ const colorSelectionSection = document.getElementById('colorSelectionSection');
 let gameMode = 'human'; // 'human' or 'bot'
 let selectedColor = 'white'; // 'white', 'black', or 'random'
 let botDifficultyLevel = 'easy';
+let localChess = null; // Local chess instance for bot games
+let isBotGame = false;
 
 // Initialize WebSocket connection
 function connectWebSocket() {
@@ -239,6 +241,8 @@ function resetToMenu() {
     gameState = null;
     selectedSquare = null;
     legalMoves = [];
+    isBotGame = false;
+    localChess = null;
     
     // Reset board flip state
     isBoardFlipped = false;
@@ -333,35 +337,59 @@ function parseFEN(fen) {
 }
 
 function handleSquareClick(squareId) {
+    if (gameState && gameState.isGameOver) return;
+    
+    // For bot games
+    if (isBotGame) {
+        if (gameState.turn !== playerColor) return;
+        
+        const clickedSquare = document.querySelector(`[data-square="${squareId}"]`);
+        const pieceElement = clickedSquare.querySelector('.piece');
+        const piece = pieceElement ? pieceElement.textContent : '';
+
+        if (selectedSquare) {
+            const move = legalMoves.find(m => m.to === squareId);
+            if (move) {
+                // Make the move on local chess instance
+                localChess.move({ from: selectedSquare, to: squareId, promotion: 'q' });
+                updateBotGameState();
+                clearSelection();
+            } else if (piece && isOwnPiece(piece)) {
+                selectSquare(squareId);
+            } else {
+                clearSelection();
+            }
+        } else {
+            if (piece && isOwnPiece(piece)) {
+                selectSquare(squareId);
+            }
+        }
+        return;
+    }
+    
+    // For multiplayer games
     if (playerRole !== 'player') return;
-    if (gameState.isGameOver) return;
     if (gameState.turn !== playerColor) return;
 
     const clickedSquare = document.querySelector(`[data-square="${squareId}"]`);
     const pieceElement = clickedSquare.querySelector('.piece');
     const piece = pieceElement ? pieceElement.textContent : '';
 
-    // If a square is already selected
     if (selectedSquare) {
-        // Check if clicked square is a legal move
         const move = legalMoves.find(m => m.to === squareId);
         if (move) {
-            // Make the move
             makeMove({
                 from: selectedSquare,
                 to: squareId,
-                promotion: move.promotion || 'q' // Auto-promote to queen
+                promotion: move.promotion || 'q'
             });
             clearSelection();
         } else if (piece && isOwnPiece(piece)) {
-            // Select different piece
             selectSquare(squareId);
         } else {
-            // Deselect
             clearSelection();
         }
     } else {
-        // Select a piece
         if (piece && isOwnPiece(piece)) {
             selectSquare(squareId);
         }
@@ -386,11 +414,18 @@ function selectSquare(squareId) {
     const square = document.querySelector(`[data-square="${squareId}"]`);
     square.classList.add('selected');
     
-    // Request legal moves from server
-    ws.send(JSON.stringify({
-        type: 'get_legal_moves',
-        square: squareId
-    }));
+    // Get legal moves
+    if (isBotGame) {
+        // Use local chess instance
+        legalMoves = localChess.moves({ square: squareId, verbose: true });
+        highlightLegalMoves();
+    } else {
+        // Request from server
+        ws.send(JSON.stringify({
+            type: 'get_legal_moves',
+            square: squareId
+        }));
+    }
 }
 
 function clearSelection() {
@@ -459,30 +494,101 @@ function updateGameInfo() {
 
 // Bot Move Logic
 function makeBotMove() {
-    if (!gameState || gameState.isGameOver) return;
+    if (!localChess || localChess.game_over()) return;
     
-    // Get all legal moves for current position
-    const allMoves = [];
-    const squares = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    const ranks = ['1', '2', '3', '4', '5', '6', '7', '8'];
+    const moves = localChess.moves({ verbose: true });
+    if (moves.length === 0) return;
     
-    squares.forEach(file => {
-        ranks.forEach(rank => {
-            const square = file + rank;
-            // Request legal moves from server
-            ws.send(JSON.stringify({
-                type: 'get_legal_moves',
-                square: square
-            }));
-        });
+    let selectedMove;
+    
+    switch (botDifficultyLevel) {
+        case 'easy':
+            // Random move
+            selectedMove = moves[Math.floor(Math.random() * moves.length)];
+            break;
+            
+        case 'medium':
+            // Prefer captures and checks
+            const goodMoves = moves.filter(m => m.captured || m.san.includes('+'));
+            selectedMove = goodMoves.length > 0 
+                ? goodMoves[Math.floor(Math.random() * goodMoves.length)]
+                : moves[Math.floor(Math.random() * moves.length)];
+            break;
+            
+        case 'hard':
+            // Best move using simple evaluation
+            selectedMove = getBestMove(moves);
+            break;
+            
+        default:
+            selectedMove = moves[Math.floor(Math.random() * moves.length)];
+    }
+    
+    // Make the move
+    localChess.move(selectedMove);
+    updateBotGameState();
+}
+
+function getBestMove(moves) {
+    // Simple evaluation: prioritize captures, checks, and center control
+    let bestMove = moves[0];
+    let bestScore = -9999;
+    
+    moves.forEach(move => {
+        let score = 0;
+        
+        // Prioritize captures
+        if (move.captured) {
+            const pieceValues = { p: 1, n: 3, b: 3, r: 5, q: 9, k: 0 };
+            score += pieceValues[move.captured] * 10;
+        }
+        
+        // Prioritize checks
+        if (move.san.includes('+')) score += 5;
+        
+        // Prioritize checkmate
+        if (move.san.includes('#')) score += 1000;
+        
+        // Prioritize center control
+        if (['e4', 'e5', 'd4', 'd5'].includes(move.to)) score += 2;
+        
+        // Add randomness for variety
+        score += Math.random() * 2;
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestMove = move;
+        }
     });
     
-    // For now, make a random move (will be improved with difficulty)
-    // This is a simplified version - in production, you'd use chess.js on client side
-    setTimeout(() => {
-        // Placeholder: In real implementation, collect moves and choose based on difficulty
-        console.log('Bot is thinking...');
-    }, 300);
+    return bestMove;
+}
+
+function updateBotGameState() {
+    // Update game state from local chess instance
+    gameState = {
+        fen: localChess.fen(),
+        pgn: localChess.pgn(),
+        turn: localChess.turn() === 'w' ? 'white' : 'black',
+        isCheck: localChess.in_check(),
+        isCheckmate: localChess.in_checkmate(),
+        isStalemate: localChess.in_stalemate(),
+        isDraw: localChess.in_draw(),
+        isGameOver: localChess.game_over(),
+        players: [
+            { name: playerNameInput.value.trim() || 'You', color: playerColor },
+            { name: '🤖 Bot', color: playerColor === 'white' ? 'black' : 'white' }
+        ],
+        moveHistory: localChess.history({ verbose: true })
+    };
+    
+    renderBoard();
+    updateGameInfo();
+    updateMoveHistory();
+    
+    if (gameState.isGameOver) {
+        showGameOver();
+    }
 }
 
 function updatePlayerInfo() {
@@ -546,20 +652,66 @@ function hideGameOver() {
 
 // Event Handlers
 createRoomBtn.addEventListener('click', () => {
-    if (!ws || ws.readyState !== WebSocket.OPEN) {
-        alert('Not connected to server. Please wait...');
-        return;
-    }
-    
     let playerName = playerNameInput.value.trim() || 'Player';
-    // Validate and sanitize player name
     playerName = playerName.substring(0, 20).replace(/[<>"']/g, '');
     
-    ws.send(JSON.stringify({
-        type: 'create_room',
-        playerName
-    }));
+    if (gameMode === 'bot') {
+        // Start bot game locally
+        startBotGame(playerName);
+    } else {
+        // Create multiplayer room
+        if (!ws || ws.readyState !== WebSocket.OPEN) {
+            alert('Not connected to server. Please wait...');
+            return;
+        }
+        
+        ws.send(JSON.stringify({
+            type: 'create_room',
+            playerName
+        }));
+    }
 });
+
+function startBotGame(playerName) {
+    isBotGame = true;
+    
+    // Determine player color
+    if (selectedColor === 'random') {
+        playerColor = Math.random() < 0.5 ? 'white' : 'black';
+    } else {
+        playerColor = selectedColor;
+    }
+    
+    playerRole = 'player';
+    
+    // Initialize local chess instance
+    localChess = new Chess();
+    
+    // Create initial game state
+    gameState = {
+        fen: localChess.fen(),
+        pgn: localChess.pgn(),
+        turn: 'white',
+        isCheck: false,
+        isCheckmate: false,
+        isStalemate: false,
+        isDraw: false,
+        isGameOver: false,
+        players: [
+            { name: playerName, color: playerColor },
+            { name: '🤖 Bot (' + botDifficultyLevel + ')', color: playerColor === 'white' ? 'black' : 'white' }
+        ],
+        moveHistory: []
+    };
+    
+    // Show game screen
+    showGameScreen();
+    
+    // If player is black, bot makes first move
+    if (playerColor === 'black') {
+        setTimeout(makeBotMove, 1000);
+    }
+}
 
 joinRoomBtn.addEventListener('click', () => {
     joinRoomSection.classList.toggle('hidden');
@@ -606,9 +758,16 @@ copyRoomIdBtn.addEventListener('click', () => {
 
 resetGameBtn.addEventListener('click', () => {
     if (confirm('Start a new game?')) {
-        ws.send(JSON.stringify({
-            type: 'reset_game'
-        }));
+        if (isBotGame) {
+            // Reset bot game
+            const playerName = gameState.players.find(p => p.color === playerColor).name;
+            startBotGame(playerName);
+        } else {
+            // Reset multiplayer game
+            ws.send(JSON.stringify({
+                type: 'reset_game'
+            }));
+        }
     }
 });
 
