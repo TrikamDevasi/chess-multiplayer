@@ -260,6 +260,59 @@ input[type="text"]:focus {
     display: none !important;
 }
 
+/* Game Mode Selection */
+.game-mode-section, .color-selection {
+    margin: 20px 0;
+}
+
+.mode-label {
+    display: block;
+    font-weight: 600;
+    color: #1e3c72;
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.mode-buttons, .color-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.mode-btn, .color-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    background: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.mode-btn:hover, .color-btn:hover {
+    border-color: #1e3c72;
+    transform: translateY(-2px);
+}
+
+.mode-btn.active, .color-btn.active {
+    background: #1e3c72;
+    color: white;
+    border-color: #1e3c72;
+}
+
+#botDifficultySection {
+    margin: 15px 0;
+}
+
+#botDifficultySection label {
+    display: block;
+    font-weight: 600;
+    color: #1e3c72;
+    margin-bottom: 8px;
+}
+
 #joinRoomSection {
     margin-top: 20px;
     padding-top: 20px;
@@ -463,7 +516,8 @@ input[type="text"]:focus {
     pointer-events: none;
     font-size: 3.5rem;
     line-height: 1;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
+    -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
 }
 
 /* Board Themes */
@@ -514,6 +568,14 @@ body.theme-green {
     background: linear-gradient(135deg, #3d5a3d 0%, #2d4a2d 100%);
 }
 
+/* Classic Black & White Theme */
+body.theme-bw {
+    --light-square: #ffffff;
+    --dark-square: #000000;
+    --board-border: #333333;
+    background: linear-gradient(135deg, #4a4a4a 0%, #2a2a2a 100%);
+}
+
 .square.selected {
     background: #baca44 !important;
     box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(186, 202, 68, 0.6);
@@ -554,7 +616,8 @@ body.theme-green {
 }
 
 .square.last-move {
-    background: rgba(255, 255, 0, 0.4) !important;
+    box-shadow: inset 0 0 0 3px rgba(255, 215, 0, 0.8);
+    position: relative;
 }
 
 /* Game Controls */

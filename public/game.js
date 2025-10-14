@@ -52,6 +52,20 @@ const themeSelect = document.getElementById('themeSelect');
 const flipBoardBtn = document.getElementById('flipBoardBtn');
 let isBoardFlipped = false;
 
+// Game mode elements
+const humanModeBtn = document.getElementById('humanModeBtn');
+const botModeBtn = document.getElementById('botModeBtn');
+const botDifficultySection = document.getElementById('botDifficultySection');
+const botDifficulty = document.getElementById('botDifficulty');
+const whiteColorBtn = document.getElementById('whiteColorBtn');
+const blackColorBtn = document.getElementById('blackColorBtn');
+const randomColorBtn = document.getElementById('randomColorBtn');
+const colorSelectionSection = document.getElementById('colorSelectionSection');
+
+let gameMode = 'human'; // 'human' or 'bot'
+let selectedColor = 'white'; // 'white', 'black', or 'random'
+let botDifficultyLevel = 'easy';
+
 // Initialize WebSocket connection
 function connectWebSocket() {
     if (!connectionStartTime) {
@@ -433,6 +447,42 @@ function updateGameInfo() {
     } else {
         gameStatusDiv.textContent = '';
     }
+    
+    // Trigger bot move if it's bot's turn
+    if (gameMode === 'bot' && !gameState.isGameOver) {
+        const botColor = playerColor === 'white' ? 'black' : 'white';
+        if (gameState.turn === botColor) {
+            setTimeout(makeBotMove, 500); // Delay for realism
+        }
+    }
+}
+
+// Bot Move Logic
+function makeBotMove() {
+    if (!gameState || gameState.isGameOver) return;
+    
+    // Get all legal moves for current position
+    const allMoves = [];
+    const squares = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    const ranks = ['1', '2', '3', '4', '5', '6', '7', '8'];
+    
+    squares.forEach(file => {
+        ranks.forEach(rank => {
+            const square = file + rank;
+            // Request legal moves from server
+            ws.send(JSON.stringify({
+                type: 'get_legal_moves',
+                square: square
+            }));
+        });
+    });
+    
+    // For now, make a random move (will be improved with difficulty)
+    // This is a simplified version - in production, you'd use chess.js on client side
+    setTimeout(() => {
+        // Placeholder: In real implementation, collect moves and choose based on difficulty
+        console.log('Bot is thinking...');
+    }, 300);
 }
 
 function updatePlayerInfo() {
@@ -592,7 +642,7 @@ roomIdInput.addEventListener('keypress', (e) => {
 // Theme Management
 function changeTheme(theme) {
     // Remove all theme classes
-    document.body.classList.remove('theme-classic', 'theme-modern', 'theme-wooden', 'theme-dark', 'theme-green');
+    document.body.classList.remove('theme-classic', 'theme-modern', 'theme-wooden', 'theme-dark', 'theme-green', 'theme-bw');
     
     // Add selected theme class
     if (theme !== 'classic') {
@@ -619,6 +669,52 @@ themeSelect.addEventListener('change', (e) => {
 // Flip board button
 flipBoardBtn.addEventListener('click', () => {
     flipBoard();
+});
+
+// Game Mode Selection
+humanModeBtn.addEventListener('click', () => {
+    gameMode = 'human';
+    humanModeBtn.classList.add('active');
+    botModeBtn.classList.remove('active');
+    botDifficultySection.classList.add('hidden');
+    colorSelectionSection.classList.add('hidden');
+    joinRoomBtn.style.display = 'block';
+});
+
+botModeBtn.addEventListener('click', () => {
+    gameMode = 'bot';
+    botModeBtn.classList.add('active');
+    humanModeBtn.classList.remove('active');
+    botDifficultySection.classList.remove('hidden');
+    colorSelectionSection.classList.remove('hidden');
+    joinRoomBtn.style.display = 'none';
+});
+
+// Color Selection
+whiteColorBtn.addEventListener('click', () => {
+    selectedColor = 'white';
+    whiteColorBtn.classList.add('active');
+    blackColorBtn.classList.remove('active');
+    randomColorBtn.classList.remove('active');
+});
+
+blackColorBtn.addEventListener('click', () => {
+    selectedColor = 'black';
+    blackColorBtn.classList.add('active');
+    whiteColorBtn.classList.remove('active');
+    randomColorBtn.classList.remove('active');
+});
+
+randomColorBtn.addEventListener('click', () => {
+    selectedColor = 'random';
+    randomColorBtn.classList.add('active');
+    whiteColorBtn.classList.remove('active');
+    blackColorBtn.classList.remove('active');
+});
+
+// Bot Difficulty
+botDifficulty.addEventListener('change', (e) => {
+    botDifficultyLevel = e.target.value;
 });
 
 // Load saved theme on startup

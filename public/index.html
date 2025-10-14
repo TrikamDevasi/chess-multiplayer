@@ -20,6 +20,7 @@
                     <option value="wooden">Wooden</option>
                     <option value="dark">Dark Mode</option>
                     <option value="green">Tournament Green</option>
+                    <option value="bw">Black & White</option>
                 </select>
             </div>
         </div>
@@ -35,6 +36,35 @@
             <div class="menu-card">
                 <h2>Welcome to Chess!</h2>
                 <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
+                
+                <!-- Game Mode Selection -->
+                <div class="game-mode-section">
+                    <label class="mode-label">🎮 Play Mode:</label>
+                    <div class="mode-buttons">
+                        <button id="humanModeBtn" class="mode-btn active">👥 Human</button>
+                        <button id="botModeBtn" class="mode-btn">🤖 Bot</button>
+                    </div>
+                </div>
+                
+                <!-- Bot Difficulty (hidden by default) -->
+                <div id="botDifficultySection" class="hidden">
+                    <label for="botDifficulty">Difficulty:</label>
+                    <select id="botDifficulty" class="theme-dropdown">
+                        <option value="easy">Easy</option>
+                        <option value="medium">Medium</option>
+                        <option value="hard">Hard</option>
+                    </select>
+                </div>
+                
+                <!-- Color Selection -->
+                <div id="colorSelectionSection" class="color-selection">
+                    <label class="mode-label">Choose Your Color:</label>
+                    <div class="color-buttons">
+                        <button id="whiteColorBtn" class="color-btn active">⚪ White</button>
+                        <button id="blackColorBtn" class="color-btn">⚫ Black</button>
+                        <button id="randomColorBtn" class="color-btn">🎲 Random</button>
+                    </div>
+                </div>
                 
                 <div class="button-group">
                     <button id="createRoomBtn" class="btn btn-primary">Create Room</button>
