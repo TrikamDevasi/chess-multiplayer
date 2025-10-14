@@ -227,10 +227,7 @@ function resetToMenu() {
     legalMoves = [];
     
     // Reset board flip state
-    if (isBoardFlipped) {
-        chessBoard.classList.remove('flipped');
-        isBoardFlipped = false;
-    }
+    isBoardFlipped = false;
     
     showScreen(menuScreen);
     joinRoomSection.classList.add('hidden');
@@ -240,11 +237,20 @@ function resetToMenu() {
 // Chess Board Management
 function initializeBoard() {
     chessBoard.innerHTML = '';
+    
+    // Determine if we need to flip the board rendering
+    const shouldFlip = isBoardFlipped;
+    
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             const square = document.createElement('div');
-            const file = String.fromCharCode(97 + col); // a-h
-            const rank = 8 - row; // 8-1
+            
+            // Calculate file and rank based on flip state
+            const actualRow = shouldFlip ? (7 - row) : row;
+            const actualCol = shouldFlip ? (7 - col) : col;
+            
+            const file = String.fromCharCode(97 + actualCol); // a-h
+            const rank = 8 - actualRow; // 8-1
             const squareId = file + rank;
             
             square.className = 'square';
@@ -600,7 +606,9 @@ function changeTheme(theme) {
 // Board Flip
 function flipBoard() {
     isBoardFlipped = !isBoardFlipped;
-    chessBoard.classList.toggle('flipped');
+    // Reinitialize and render board with new orientation
+    initializeBoard();
+    renderBoard();
 }
 
 // Theme selector event
