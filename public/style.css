@@ -12,6 +12,7 @@ body {
     justify-content: center;
     align-items: center;
     padding: 20px;
+    overflow-x: hidden;
 }
 
 .container {
@@ -372,6 +373,15 @@ input[type="text"]:focus {
     to { transform: rotate(360deg); }
 }
 
+.waiting-animation p {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
 /* Game Screen */
 .game-container {
     display: flex;
@@ -469,6 +479,21 @@ input[type="text"]:focus {
     border-radius: 8px;
     font-family: monospace;
     font-size: 0.9rem;
+    scrollbar-width: thin;
+    scrollbar-color: #1e3c72 #f9fafb;
+}
+
+.move-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.move-list::-webkit-scrollbar-track {
+    background: #f9fafb;
+}
+
+.move-list::-webkit-scrollbar-thumb {
+    background: #1e3c72;
+    border-radius: 3px;
 }
 
 .move-item {
@@ -478,6 +503,33 @@ input[type="text"]:focus {
 
 .move-item:last-child {
     border-bottom: none;
+}
+
+/* Game Stats */
+.game-stats {
+    background: #f3f4f6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.stat-value {
+    font-weight: 700;
+    color: #1e3c72;
+    font-size: 1.1rem;
 }
 
 /* Chess Board */
@@ -518,6 +570,18 @@ input[type="text"]:focus {
     line-height: 1;
     filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
     -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
+    animation: pieceAppear 0.3s ease-out;
+}
+
+@keyframes pieceAppear {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* Board Themes */
@@ -671,8 +735,33 @@ body.theme-bw {
 
 .modal-content p {
     color: #6b7280;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     font-size: 1.2rem;
+}
+
+.modal-icon {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    animation: modalIconBounce 0.6s ease-out;
+}
+
+@keyframes modalIconBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.modal-stats {
+    background: #f3f4f6;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.modal-stats p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #374151;
 }
 
 /* Responsive Design */

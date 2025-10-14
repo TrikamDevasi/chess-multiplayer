@@ -47,6 +47,12 @@ const gameOverModal = document.getElementById('gameOverModal');
 const gameOverTitle = document.getElementById('gameOverTitle');
 const gameOverMessage = document.getElementById('gameOverMessage');
 const playAgainBtn = document.getElementById('playAgainBtn');
+const backToMenuBtn = document.getElementById('backToMenuBtn');
+const modalIcon = document.getElementById('modalIcon');
+const modalStats = document.getElementById('modalStats');
+
+const moveCountEl = document.getElementById('moveCount');
+const captureCountEl = document.getElementById('captureCount');
 
 const themeSelect = document.getElementById('themeSelect');
 const flipBoardBtn = document.getElementById('flipBoardBtn');
@@ -609,14 +615,23 @@ function updateMoveHistory() {
     if (!gameState || !gameState.moveHistory) return;
 
     moveList.innerHTML = '';
+    let captureCount = 0;
+    
     gameState.moveHistory.forEach((move, index) => {
         const moveItem = document.createElement('div');
         moveItem.className = 'move-item';
         const moveNumber = Math.floor(index / 2) + 1;
-        const color = index % 2 === 0 ? 'White' : 'Black';
-        moveItem.textContent = `${moveNumber}. ${move.san}`;
+        const color = index % 2 === 0 ? '⚪' : '⚫';
+        moveItem.textContent = `${moveNumber}. ${color} ${move.san}`;
         moveList.appendChild(moveItem);
+        
+        // Count captures
+        if (move.captured) captureCount++;
     });
+
+    // Update stats
+    moveCountEl.textContent = Math.ceil(gameState.moveHistory.length / 2);
+    captureCountEl.textContent = captureCount;
 
     // Scroll to bottom
     moveList.scrollTop = moveList.scrollHeight;
@@ -624,24 +639,45 @@ function updateMoveHistory() {
 
 function showGameOver() {
     setTimeout(() => {
+        let statsHTML = '';
+        
         if (gameState.isCheckmate) {
             const winner = gameState.turn === 'white' ? 'Black' : 'White';
             gameOverTitle.textContent = 'Checkmate!';
+            
             if ((winner === 'White' && playerColor === 'white') || 
                 (winner === 'Black' && playerColor === 'black')) {
                 gameOverMessage.textContent = 'You Won! 🎉';
+                modalIcon.textContent = '🏆';
             } else if (playerRole === 'spectator') {
                 gameOverMessage.textContent = `${winner} Wins!`;
+                modalIcon.textContent = '👑';
             } else {
                 gameOverMessage.textContent = 'You Lost!';
+                modalIcon.textContent = '😔';
             }
         } else if (gameState.isStalemate) {
             gameOverTitle.textContent = 'Stalemate!';
             gameOverMessage.textContent = "It's a draw!";
+            modalIcon.textContent = '🤝';
         } else if (gameState.isDraw) {
             gameOverTitle.textContent = 'Draw!';
             gameOverMessage.textContent = 'Game ended in a draw!';
+            modalIcon.textContent = '🤝';
         }
+        
+        // Add game statistics
+        const totalMoves = Math.ceil(gameState.moveHistory.length / 2);
+        const captures = gameState.moveHistory.filter(m => m.captured).length;
+        const checks = gameState.moveHistory.filter(m => m.san.includes('+')).length;
+        
+        statsHTML = `
+            <p><strong>Total Moves:</strong> ${totalMoves}</p>
+            <p><strong>Captures:</strong> ${captures}</p>
+            <p><strong>Checks:</strong> ${checks}</p>
+        `;
+        
+        modalStats.innerHTML = statsHTML;
         gameOverModal.classList.remove('hidden');
     }, 500);
 }
@@ -772,9 +808,28 @@ resetGameBtn.addEventListener('click', () => {
 });
 
 playAgainBtn.addEventListener('click', () => {
-    ws.send(JSON.stringify({
-        type: 'reset_game'
-    }));
+    hideGameOver();
+    if (isBotGame) {
+        const playerName = gameState.players.find(p => p.color === playerColor).name;
+        startBotGame(playerName);
+    } else {
+        ws.send(JSON.stringify({
+            type: 'reset_game'
+        }));
+    }
+});
+
+backToMenuBtn.addEventListener('click', () => {
+    hideGameOver();
+    if (isBotGame) {
+        resetToMenu();
+    } else {
+        if (confirm('Leave the game and return to menu?')) {
+            ws.close();
+            resetToMenu();
+            connectWebSocket();
+        }
+    }
 });
 
 leaveRoomBtn.addEventListener('click', () => {
@@ -880,6 +935,39 @@ botDifficulty.addEventListener('change', (e) => {
 const savedTheme = localStorage.getItem('chessTheme') || 'classic';
 themeSelect.value = savedTheme;
 changeTheme(savedTheme);
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+    // ESC to close modal or go back
+    if (e.key === 'Escape') {
+        if (!gameOverModal.classList.contains('hidden')) {
+            hideGameOver();
+        }
+    }
+    
+    // F for flip board (during game)
+    if (e.key === 'f' || e.key === 'F') {
+        if (gameState && !menuScreen.classList.contains('active')) {
+            flipBoard();
+        }
+    }
+    
+    // R for reset (with confirmation)
+    if ((e.key === 'r' || e.key === 'R') && e.ctrlKey) {
+        e.preventDefault();
+        if (gameState && !menuScreen.classList.contains('active')) {
+            resetGameBtn.click();
+        }
+    }
+});
+
+// Prevent accidental page refresh during game
+window.addEventListener('beforeunload', (e) => {
+    if (gameState && !menuScreen.classList.contains('active')) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
 
 // Initialize
 connectWebSocket();

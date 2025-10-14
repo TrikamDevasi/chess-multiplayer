@@ -120,6 +120,18 @@
                         <h3>Move History</h3>
                         <div id="moveList" class="move-list"></div>
                     </div>
+                    
+                    <!-- Game Stats -->
+                    <div class="game-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Moves:</span>
+                            <span id="moveCount" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Captures:</span>
+                            <span id="captureCount" class="stat-value">0</span>
+                        </div>
+                    </div>
 
                     <div class="game-controls">
                         <button id="flipBoardBtn" class="btn btn-secondary">🔄 Flip Board</button>
@@ -137,9 +149,14 @@
         <!-- Game Over Modal -->
         <div id="gameOverModal" class="modal hidden">
             <div class="modal-content">
+                <div class="modal-icon" id="modalIcon">🏆</div>
                 <h2 id="gameOverTitle">Game Over!</h2>
                 <p id="gameOverMessage"></p>
-                <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+                <div class="modal-stats" id="modalStats"></div>
+                <div class="button-group">
+                    <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+                    <button id="backToMenuBtn" class="btn btn-secondary">Main Menu</button>
+                </div>
             </div>
         </div>
     </div>
