@@ -246,7 +246,19 @@ function renderBoard() {
     
     document.querySelectorAll('.square').forEach(square => {
         const squareId = square.dataset.square;
-        square.textContent = position[squareId] || '';
+        const piece = position[squareId];
+        
+        // Clear square content
+        square.innerHTML = '';
+        
+        // Add piece with wrapper for proper rotation
+        if (piece) {
+            const pieceSpan = document.createElement('span');
+            pieceSpan.className = 'piece';
+            pieceSpan.textContent = piece;
+            square.appendChild(pieceSpan);
+        }
+        
         square.classList.remove('selected', 'legal-move', 'legal-capture', 'last-move');
     });
 
@@ -287,7 +299,8 @@ function handleSquareClick(squareId) {
     if (gameState.turn !== playerColor) return;
 
     const clickedSquare = document.querySelector(`[data-square="${squareId}"]`);
-    const piece = clickedSquare.textContent;
+    const pieceElement = clickedSquare.querySelector('.piece');
+    const piece = pieceElement ? pieceElement.textContent : '';
 
     // If a square is already selected
     if (selectedSquare) {
