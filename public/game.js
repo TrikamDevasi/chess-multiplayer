@@ -166,10 +166,13 @@ function handleServerMessage(data) {
 
         case 'your_color':
             playerColor = data.color;
+            playerRole = 'player'; // CRITICAL FIX: Set role to player
+            console.log('Your color set to:', playerColor, 'Role:', playerRole);
             break;
 
         case 'game_start':
             gameState = data.gameState;
+            console.log('Game started! GameState:', gameState);
             showGameScreen();
             renderBoard();
             updateGameInfo();
@@ -780,6 +783,11 @@ function startBotGame(playerName) {
     
     // Show game screen
     showGameScreen();
+    
+    // CRITICAL: Render the board with pieces
+    renderBoard();
+    updatePlayerInfo();
+    updateGameInfo();
     
     // If player is black, bot makes first move
     if (playerColor === 'black') {
