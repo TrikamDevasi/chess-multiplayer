@@ -51,6 +51,11 @@ const backToMenuBtn = document.getElementById('backToMenuBtn');
 const modalIcon = document.getElementById('modalIcon');
 const modalStats = document.getElementById('modalStats');
 
+const newGameModal = document.getElementById('newGameModal');
+const newGameMessage = document.getElementById('newGameMessage');
+const acceptNewGameBtn = document.getElementById('acceptNewGameBtn');
+const declineNewGameBtn = document.getElementById('declineNewGameBtn');
+
 const moveCountEl = document.getElementById('moveCount');
 const captureCountEl = document.getElementById('captureCount');
 
@@ -227,17 +232,10 @@ function handleServerMessage(data) {
             break;
         
         case 'reset_request':
-            // Another player wants to reset the game
+            // Show modal for new game request
             const colorName = data.requestedBy === 'white' ? 'White' : 'Black';
-            if (confirm(`${colorName} player wants to start a new game. Do you agree?`)) {
-                ws.send(JSON.stringify({
-                    type: 'reset_confirmed'
-                }));
-            } else {
-                ws.send(JSON.stringify({
-                    type: 'reset_declined'
-                }));
-            }
+            newGameMessage.textContent = `${colorName} player wants to start a new game.`;
+            newGameModal.classList.remove('hidden');
             break;
         
         case 'reset_declined':
@@ -918,6 +916,21 @@ leaveRoomBtn.addEventListener('click', () => {
         resetToMenu();
         connectWebSocket();
     }
+});
+
+// New Game Modal handlers
+acceptNewGameBtn.addEventListener('click', () => {
+    newGameModal.classList.add('hidden');
+    ws.send(JSON.stringify({
+        type: 'reset_confirmed'
+    }));
+});
+
+declineNewGameBtn.addEventListener('click', () => {
+    newGameModal.classList.add('hidden');
+    ws.send(JSON.stringify({
+        type: 'reset_declined'
+    }));
 });
 
 // Allow Enter key to submit
