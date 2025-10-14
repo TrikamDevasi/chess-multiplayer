@@ -289,26 +289,31 @@ function initializeBoard() {
 }
 
 function renderBoard() {
-    if (!gameState) return;
+    if (!gameState) {
+        console.warn('renderBoard called but gameState is null');
+        return;
+    }
 
     const position = parseFEN(gameState.fen);
+    console.log('Rendering board, position:', position);
     
     document.querySelectorAll('.square').forEach(square => {
         const squareId = square.dataset.square;
         const piece = position[squareId];
         
-        // Clear square content
+        // Clear square content and classes
         square.innerHTML = '';
+        square.classList.remove('selected', 'legal-move', 'legal-capture', 'last-move');
         
-        // Add piece with wrapper for proper rotation
+        // Add piece with wrapper
         if (piece) {
             const pieceSpan = document.createElement('span');
             pieceSpan.className = 'piece';
             pieceSpan.textContent = piece;
+            pieceSpan.style.position = 'relative';
+            pieceSpan.style.zIndex = '5';
             square.appendChild(pieceSpan);
         }
-        
-        square.classList.remove('selected', 'legal-move', 'legal-capture', 'last-move');
     });
 
     // Highlight last move
@@ -343,20 +348,28 @@ function parseFEN(fen) {
 }
 
 function handleSquareClick(squareId) {
-    if (gameState && gameState.isGameOver) return;
+    console.log('Square clicked:', squareId, 'Player:', playerColor, 'Turn:', gameState?.turn, 'Role:', playerRole);
+    
+    if (gameState && gameState.isGameOver) {
+        console.log('Game is over, ignoring click');
+        return;
+    }
     
     // For bot games
     if (isBotGame) {
-        if (gameState.turn !== playerColor) return;
+        if (gameState.turn !== playerColor) {
+            console.log('Not your turn in bot game');
+            return;
+        }
         
         const clickedSquare = document.querySelector(`[data-square="${squareId}"]`);
         const pieceElement = clickedSquare.querySelector('.piece');
         const piece = pieceElement ? pieceElement.textContent : '';
+        console.log('Bot game - Piece:', piece);
 
         if (selectedSquare) {
             const move = legalMoves.find(m => m.to === squareId);
             if (move) {
-                // Make the move on local chess instance
                 localChess.move({ from: selectedSquare, to: squareId, promotion: 'q' });
                 updateBotGameState();
                 clearSelection();
@@ -374,16 +387,25 @@ function handleSquareClick(squareId) {
     }
     
     // For multiplayer games
-    if (playerRole !== 'player') return;
-    if (gameState.turn !== playerColor) return;
+    if (playerRole !== 'player') {
+        console.log('Not a player, role:', playerRole);
+        return;
+    }
+    
+    if (!gameState || gameState.turn !== playerColor) {
+        console.log('Not your turn. Your color:', playerColor, 'Current turn:', gameState?.turn);
+        return;
+    }
 
     const clickedSquare = document.querySelector(`[data-square="${squareId}"]`);
     const pieceElement = clickedSquare.querySelector('.piece');
     const piece = pieceElement ? pieceElement.textContent : '';
+    console.log('Multiplayer - Piece:', piece, 'Is own piece:', isOwnPiece(piece));
 
     if (selectedSquare) {
         const move = legalMoves.find(m => m.to === squareId);
         if (move) {
+            console.log('Making move:', selectedSquare, 'to', squareId);
             makeMove({
                 from: selectedSquare,
                 to: squareId,
@@ -397,7 +419,10 @@ function handleSquareClick(squareId) {
         }
     } else {
         if (piece && isOwnPiece(piece)) {
+            console.log('Selecting square:', squareId);
             selectSquare(squareId);
+        } else {
+            console.log('No piece or not your piece');
         }
     }
 }
@@ -711,6 +736,13 @@ createRoomBtn.addEventListener('click', () => {
 function startBotGame(playerName) {
     isBotGame = true;
     
+    // Check if Chess.js is loaded
+    if (typeof Chess === 'undefined') {
+        alert('Chess library not loaded. Please refresh the page.');
+        console.error('Chess.js library not found');
+        return;
+    }
+    
     // Determine player color
     if (selectedColor === 'random') {
         playerColor = Math.random() < 0.5 ? 'white' : 'black';
@@ -721,7 +753,13 @@ function startBotGame(playerName) {
     playerRole = 'player';
     
     // Initialize local chess instance
-    localChess = new Chess();
+    try {
+        localChess = new Chess();
+    } catch (error) {
+        console.error('Failed to initialize Chess:', error);
+        alert('Failed to start bot game. Please refresh the page.');
+        return;
+    }
     
     // Create initial game state
     gameState = {

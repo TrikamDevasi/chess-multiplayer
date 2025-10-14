@@ -561,6 +561,7 @@ input[type="text"]:focus {
     transition: all 0.2s;
     user-select: none;
     position: relative;
+    overflow: visible;
 }
 
 .square .piece {
@@ -568,9 +569,11 @@ input[type="text"]:focus {
     pointer-events: none;
     font-size: 3.5rem;
     line-height: 1;
-    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.4));
-    -webkit-text-stroke: 0.5px rgba(0, 0, 0, 0.3);
-    animation: pieceAppear 0.3s ease-out;
+    text-shadow: 
+        2px 2px 4px rgba(0, 0, 0, 0.8),
+        -1px -1px 2px rgba(255, 255, 255, 0.5),
+        1px 1px 2px rgba(0, 0, 0, 0.5);
+    filter: contrast(1.2) brightness(1.1);
 }
 
 @keyframes pieceAppear {
@@ -641,23 +644,20 @@ body.theme-bw {
 }
 
 .square.selected {
-    background: #baca44 !important;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(186, 202, 68, 0.6);
-    animation: selectedPulse 1.5s infinite;
+    box-shadow: inset 0 0 0 4px #fbbf24 !important;
+    background: rgba(251, 191, 36, 0.3) !important;
+    z-index: 10;
 }
 
-@keyframes selectedPulse {
-    0%, 100% { box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.4), 0 0 10px rgba(186, 202, 68, 0.6); }
-    50% { box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(186, 202, 68, 0.8); }
-}
 
 .square.legal-move::after {
     content: '';
     position: absolute;
-    width: 25%;
-    height: 25%;
-    background: rgba(0, 0, 0, 0.2);
+    width: 30%;
+    height: 30%;
+    background: rgba(34, 197, 94, 0.6);
     border-radius: 50%;
+    z-index: 1;
 }
 
 .square.legal-capture::after {
@@ -665,8 +665,9 @@ body.theme-bw {
     position: absolute;
     width: 90%;
     height: 90%;
-    border: 4px solid rgba(0, 0, 0, 0.2);
+    border: 4px solid rgba(239, 68, 68, 0.7);
     border-radius: 50%;
+    z-index: 1;
 }
 
 .square:hover:not(.no-hover) {
@@ -680,8 +681,8 @@ body.theme-bw {
 }
 
 .square.last-move {
-    box-shadow: inset 0 0 0 3px rgba(255, 215, 0, 0.8);
-    position: relative;
+    box-shadow: inset 0 0 0 3px rgba(59, 130, 246, 0.9) !important;
+    background: rgba(59, 130, 246, 0.15) !important;
 }
 
 /* Game Controls */
