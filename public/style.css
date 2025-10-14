@@ -603,6 +603,41 @@ input[type="text"]:focus {
     }
 }
 
+@keyframes pieceMove {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.square.piece-moving .piece {
+    animation: pieceMove 0.3s ease-out;
+}
+
+.square.piece-captured .piece {
+    animation: pieceCaptured 0.4s ease-out forwards;
+}
+
+@keyframes pieceCaptured {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.2) rotate(10deg);
+        opacity: 0.5;
+    }
+    100% {
+        transform: scale(0) rotate(20deg);
+        opacity: 0;
+    }
+}
+
 /* Board Themes */
 .square.light {
     background: var(--light-square, #f0d9b5);

@@ -188,10 +188,30 @@ function handleServerMessage(data) {
             break;
 
         case 'game_update':
+            // Animate the move
+            if (data.move) {
+                const fromSquare = document.querySelector(`[data-square="${data.move.from}"]`);
+                const toSquare = document.querySelector(`[data-square="${data.move.to}"]`);
+                
+                // Add animation classes
+                if (toSquare) toSquare.classList.add('piece-moving');
+                if (data.move.captured && toSquare) {
+                    toSquare.classList.add('piece-captured');
+                }
+                
+                // Remove animation classes after animation completes
+                setTimeout(() => {
+                    if (toSquare) {
+                        toSquare.classList.remove('piece-moving', 'piece-captured');
+                    }
+                }, 400);
+            }
+            
             gameState = data.gameState;
             renderBoard();
             updateGameInfo();
             updateMoveHistory();
+            
             if (gameState.isGameOver) {
                 showGameOver();
             }
@@ -203,11 +223,25 @@ function handleServerMessage(data) {
             updateGameInfo();
             updateMoveHistory();
             hideGameOver();
+            alert('Game has been reset!');
             break;
-
-        case 'legal_moves':
-            legalMoves = data.moves;
-            highlightLegalMoves();
+        
+        case 'reset_request':
+            // Another player wants to reset the game
+            const colorName = data.requestedBy === 'white' ? 'White' : 'Black';
+            if (confirm(`${colorName} player wants to start a new game. Do you agree?`)) {
+                ws.send(JSON.stringify({
+                    type: 'reset_confirmed'
+                }));
+            } else {
+                ws.send(JSON.stringify({
+                    type: 'reset_declined'
+                }));
+            }
+            break;
+        
+        case 'reset_declined':
+            alert('Your opponent declined the new game request.');
             break;
 
         case 'player_disconnected':
@@ -937,7 +971,7 @@ humanModeBtn.addEventListener('click', () => {
     humanModeBtn.classList.add('active');
     botModeBtn.classList.remove('active');
     botDifficultySection.classList.add('hidden');
-    colorSelectionSection.classList.add('hidden');
+    colorSelectionSection.classList.add('hidden'); // Hide for human mode
     joinRoomBtn.style.display = 'block';
 });
 
@@ -946,7 +980,7 @@ botModeBtn.addEventListener('click', () => {
     botModeBtn.classList.add('active');
     humanModeBtn.classList.remove('active');
     botDifficultySection.classList.remove('hidden');
-    colorSelectionSection.classList.remove('hidden');
+    colorSelectionSection.classList.remove('hidden'); // Show only for bot mode
     joinRoomBtn.style.display = 'none';
 });
 

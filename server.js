@@ -237,11 +237,35 @@ wss.on('connection', (ws) => {
                     
                     const resetRoom = rooms.get(currentRoom);
                     if (resetRoom) {
-                        resetRoom.reset();
+                        // Broadcast reset request to other player
                         resetRoom.broadcast({
+                            type: 'reset_request',
+                            requestedBy: playerColor
+                        }, ws); // Exclude the requester
+                    }
+                    break;
+                
+                case 'reset_confirmed':
+                    if (!currentRoom) return;
+                    
+                    const confirmRoom = rooms.get(currentRoom);
+                    if (confirmRoom) {
+                        confirmRoom.reset();
+                        confirmRoom.broadcast({
                             type: 'game_reset',
-                            gameState: resetRoom.getGameState()
+                            gameState: confirmRoom.getGameState()
                         });
+                    }
+                    break;
+                
+                case 'reset_declined':
+                    if (!currentRoom) return;
+                    
+                    const declineRoom = rooms.get(currentRoom);
+                    if (declineRoom) {
+                        declineRoom.broadcast({
+                            type: 'reset_declined'
+                        }, ws);
                     }
                     break;
 
