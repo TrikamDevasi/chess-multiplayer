@@ -1,179 +1,288 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Multiplayer</title>
+    <meta name="description"
+        content="Play chess online with friends! Chess Pro offers multiplayer gameplay, bot mode, and private rooms with PIN protection. Start playing now!">
+    <meta name="keywords" content="chess online, multiplayer chess, chess game, play chess, chess app">
+    <meta name="author" content="Chess Pro">
+    <meta name="theme-color" content="#1e293b">
+
+    <!-- Open Graph / Social Meta Tags -->
+    <meta property="og:title" content="Chess Pro - Play Chess Online">
+    <meta property="og:description" content="Multiplayer chess with friends. Fast, secure, and beautifully designed.">
+    <meta property="og:type" content="website">
+
+    <title>Chess Pro | Multiplayer</title>
+
+    <!-- Preconnect to font source for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Defer scripts to improve load time -->
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" defer></script>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header-section">
-            <h1>♟️ Chess Online</h1>
-            
-            <!-- Theme Selector -->
-            <div class="theme-selector">
-                <label for="themeSelect">🎨 Theme:</label>
-                <select id="themeSelect" class="theme-dropdown">
-                    <option value="classic">Classic</option>
-                    <option value="modern">Modern Blue</option>
-                    <option value="wooden">Wooden</option>
-                    <option value="dark">Dark Mode</option>
-                    <option value="green">Tournament Green</option>
-                    <option value="bw">Black & White</option>
-                </select>
+    <div class="app-container">
+        <!-- Navigation / Header -->
+        <nav class="navbar" role="navigation" aria-label="Main navigation">
+            <div class="logo">
+                <span class="logo-icon" aria-hidden="true">♔</span>
+                <h1>Chess<span class="highlight">Pro</span></h1>
             </div>
-        </div>
-        
-        <!-- Connection Status -->
-        <div id="connectionStatus" class="status-bar">
-            <span class="status-dot"></span>
-            <span id="statusText">Connecting...</span>
-        </div>
-
-        <!-- Menu Screen -->
-        <div id="menuScreen" class="screen active">
-            <div class="menu-card">
-                <h2>Welcome to Chess!</h2>
-                <input type="text" id="playerNameInput" placeholder="Enter your name" maxlength="20">
-                
-                <!-- Game Mode Selection -->
-                <div class="game-mode-section">
-                    <label class="mode-label">🎮 Play Mode:</label>
-                    <div class="mode-buttons">
-                        <button id="humanModeBtn" class="mode-btn active">👥 Human</button>
-                        <button id="botModeBtn" class="mode-btn">🤖 Bot</button>
-                    </div>
-                </div>
-                
-                <!-- Bot Difficulty (hidden by default) -->
-                <div id="botDifficultySection" class="hidden">
-                    <label for="botDifficulty">Difficulty:</label>
-                    <select id="botDifficulty" class="theme-dropdown">
-                        <option value="easy">Easy</option>
-                        <option value="medium">Medium</option>
-                        <option value="hard">Hard</option>
-                    </select>
-                </div>
-                
-                <!-- Color Selection -->
-                <div id="colorSelectionSection" class="color-selection">
-                    <label class="mode-label">Choose Your Color:</label>
-                    <div class="color-buttons">
-                        <button id="whiteColorBtn" class="color-btn active">⚪ White</button>
-                        <button id="blackColorBtn" class="color-btn">⚫ Black</button>
-                        <button id="randomColorBtn" class="color-btn">🎲 Random</button>
-                    </div>
-                </div>
-                
-                <div class="button-group">
-                    <button id="createRoomBtn" class="btn btn-primary">Create Room</button>
-                    <button id="joinRoomBtn" class="btn btn-secondary">Join Room</button>
-                </div>
-
-                <div id="joinRoomSection" class="hidden">
-                    <input type="text" id="roomIdInput" placeholder="Enter Room ID" maxlength="6">
-                    <button id="joinRoomConfirmBtn" class="btn btn-success">Join</button>
+            <div class="nav-controls">
+                <button id="tipsBtn" class="btn-icon-text" aria-label="Show chess tips">
+                    <span class="icon" aria-hidden="true">💡</span> Tips
+                </button>
+                <div class="theme-switch-wrapper">
+                    <label class="theme-switch" for="checkbox">
+                        <input type="checkbox" id="checkbox" aria-label="Toggle dark mode" />
+                        <div class="slider round"></div>
+                    </label>
+                    <span class="theme-label">Dark Mode</span>
                 </div>
             </div>
-        </div>
+        </nav>
 
-        <!-- Waiting Screen -->
-        <div id="waitingScreen" class="screen">
-            <div class="waiting-card">
-                <h2>Room Created!</h2>
-                <p>Share this Room ID with your opponent:</p>
-                <div class="room-id-display">
-                    <span id="displayRoomId"></span>
-                    <button id="copyRoomIdBtn" class="btn-icon" title="Copy Room ID">📋</button>
-                </div>
-                <div class="waiting-animation">
-                    <div class="spinner"></div>
-                    <p>Waiting for opponent...</p>
-                </div>
+        <!-- Main Content Area -->
+        <main class="main-content" role="main">
+
+            <!-- Connection Status (Toast style) -->
+            <div id="connectionStatus" class="status-toast" role="status" aria-live="polite">
+                <div class="status-indicator" aria-hidden="true"></div>
+                <span id="statusText">Connecting...</span>
             </div>
-        </div>
 
-        <!-- Game Screen -->
-        <div id="gameScreen" class="screen">
-            <div class="game-container">
-                <div class="game-sidebar">
-                    <div class="player-info">
-                        <div id="blackPlayerInfo" class="player-card">
-                            <span class="player-color">⚫</span>
-                            <span class="player-name">Black</span>
-                        </div>
-                        <div id="whitePlayerInfo" class="player-card">
-                            <span class="player-color">⚪</span>
-                            <span class="player-name">White</span>
-                        </div>
-                    </div>
-                    
-                    <div id="turnIndicator" class="turn-indicator">
-                        <span id="currentTurnText">White's Turn</span>
+            <!-- Menu Screen -->
+            <section id="menuScreen" class="screen active" aria-label="Main menu">
+                <div class="glass-card menu-card">
+                    <div class="card-header">
+                        <h2>Welcome Back</h2>
+                        <p>Enter your details to start playing</p>
                     </div>
 
-                    <div id="gameStatus" class="game-status"></div>
-
-                    <div class="move-history">
-                        <h3>Move History</h3>
-                        <div id="moveList" class="move-list"></div>
-                    </div>
-                    
-                    <!-- Game Stats -->
-                    <div class="game-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Moves:</span>
-                            <span id="moveCount" class="stat-value">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Captures:</span>
-                            <span id="captureCount" class="stat-value">0</span>
-                        </div>
+                    <div class="input-group">
+                        <label for="playerNameInput">Player Name</label>
+                        <input type="text" id="playerNameInput" placeholder="Grandmaster..." maxlength="15"
+                            aria-required="true">
                     </div>
 
-                    <div class="game-controls">
-                        <button id="flipBoardBtn" class="btn btn-secondary">🔄 Flip Board</button>
-                        <button id="resetGameBtn" class="btn btn-secondary">New Game</button>
-                        <button id="leaveRoomBtn" class="btn btn-danger">Leave Room</button>
+                    <div class="mode-selection" role="group" aria-label="Game mode selection">
+                        <button id="humanModeBtn" class="mode-card active" aria-pressed="true">
+                            <span class="mode-icon" aria-hidden="true">👥</span>
+                            <h3>Multiplayer</h3>
+                            <p>Play against friends</p>
+                        </button>
+                        <button id="botModeBtn" class="mode-card" aria-pressed="false">
+                            <span class="mode-icon" aria-hidden="true">🤖</span>
+                            <h3>vs Bot</h3>
+                            <p>Practice mode</p>
+                        </button>
+                    </div>
+
+                    <!-- Bot Difficulty -->
+                    <div id="botDifficultySection" class="difficulty-selector hidden">
+                        <label>Difficulty</label>
+                        <div class="difficulty-options" role="radiogroup" aria-label="Bot difficulty">
+                            <button data-level="easy" class="diff-btn active" role="radio"
+                                aria-checked="true">Easy</button>
+                            <button data-level="medium" class="diff-btn" role="radio"
+                                aria-checked="false">Medium</button>
+                            <button data-level="hard" class="diff-btn" role="radio" aria-checked="false">Hard</button>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button id="createRoomBtn" class="btn btn-primary btn-lg">Create Room</button>
+                        <button id="joinRoomBtn" class="btn btn-secondary btn-lg">Join Room</button>
                     </div>
                 </div>
 
-                <div class="chess-board-container">
-                    <div id="chessBoard" class="chess-board"></div>
+                <!-- Join Room Modal/Overlay -->
+                <div id="joinRoomOverlay" class="overlay hidden" role="dialog" aria-labelledby="joinRoomTitle"
+                    aria-modal="true">
+                    <div class="glass-card overlay-card">
+                        <button class="close-btn" id="closeOverlayBtn" aria-label="Close join room dialog">×</button>
+                        <h3 id="joinRoomTitle">Join Room</h3>
+                        <div class="input-group">
+                            <label for="roomIdInput">Room ID</label>
+                            <input type="text" id="roomIdInput" placeholder="XY12Z3" maxlength="6"
+                                style="text-transform:uppercase" aria-required="true">
+                        </div>
+                        <div class="input-group">
+                            <label for="joinPinInput">Room PIN (Optional)</label>
+                            <input type="password" id="joinPinInput" placeholder="****" maxlength="4"
+                                aria-required="false">
+                        </div>
+                        <button id="joinRoomConfirmBtn" class="btn btn-primary full-width">Join Game</button>
+                    </div>
+                </div>
+
+                <!-- Create Room Overlay -->
+                <div id="createRoomOverlay" class="overlay hidden" role="dialog" aria-labelledby="createRoomTitle"
+                    aria-modal="true">
+                    <div class="glass-card overlay-card">
+                        <button class="close-btn" id="closeCreateOverlayBtn"
+                            aria-label="Close create room dialog">×</button>
+                        <h3 id="createRoomTitle">Create Room</h3>
+                        <div class="input-group">
+                            <label for="createPinInput">Set PIN (Optional)</label>
+                            <input type="password" id="createPinInput" placeholder="Leave empty for public"
+                                maxlength="4" aria-required="false">
+                        </div>
+                        <div class="color-selection">
+                            <label>Choose Color</label>
+                            <div class="color-options" role="radiogroup" aria-label="Piece color selection">
+                                <button id="whiteColorBtn" class="color-btn active" title="White"
+                                    aria-label="Play as white" role="radio" aria-checked="true">⚪</button>
+                                <button id="blackColorBtn" class="color-btn" title="Black" aria-label="Play as black"
+                                    role="radio" aria-checked="false">⚫</button>
+                                <button id="randomColorBtn" class="color-btn" title="Random" aria-label="Random color"
+                                    role="radio" aria-checked="false">🎲</button>
+                            </div>
+                        </div>
+                        <button id="confirmCreateRoomBtn" class="btn btn-primary full-width">Create & Play</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Waiting Screen -->
+            <section id="waitingScreen" class="screen" aria-label="Waiting for opponent">
+                <div class="glass-card waiting-card">
+                    <div class="loader-ring" aria-hidden="true"></div>
+                    <h2>Room Created</h2>
+                    <p>Waiting for opponent to join...</p>
+
+                    <div class="room-info-box">
+                        <div class="info-row">
+                            <span>Room ID:</span>
+                            <strong id="displayRoomId" class="copy-text">LOADING</strong>
+                            <button id="copyRoomIdBtn" class="btn-icon small" title="Copy room ID"
+                                aria-label="Copy room ID">📋</button>
+                        </div>
+                        <div class="info-row" id="pinDisplayRow">
+                            <span>PIN:</span>
+                            <strong id="displayPin">OPEN</strong>
+                        </div>
+                    </div>
+                    <button id="cancelWaitingBtn" class="btn btn-danger btn-sm">Cancel</button>
+                </div>
+            </section>
+
+            <!-- Game Screen -->
+            <section id="gameScreen" class="screen" aria-label="Chess game board">
+                <div class="game-layout">
+                    <!-- Sidebar (Player Info & Stats) -->
+                    <aside class="game-sidebar" aria-label="Game information">
+                        <div class="player-card" id="topPlayerCard">
+                            <div class="avatar" aria-hidden="true">👤</div>
+                            <div class="info">
+                                <h3 class="player-name">Opponent</h3>
+                                <div class="captured-pieces" id="topCaptured" aria-label="Opponent captured pieces">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="game-info-panel glass-panel">
+                            <div class="turn-badge" id="turnIndicator" role="status" aria-live="polite">White's Turn
+                            </div>
+                            <div class="game-status-text" id="gameStatus" role="status" aria-live="assertive"></div>
+
+                            <div class="move-history-container">
+                                <h4>History</h4>
+                                <div id="moveList" class="move-list" aria-label="Move history" role="log"></div>
+                            </div>
+
+                            <div class="control-panel">
+                                <button id="flipBoardBtn" class="btn-tool" title="Flip Board"
+                                    aria-label="Flip board orientation">🔄</button>
+                                <button id="resetGameBtn" class="btn-tool" title="Reset Game"
+                                    aria-label="Request game reset">🏳️</button>
+                                <button id="leaveRoomBtn" class="btn-tool" title="Exit"
+                                    aria-label="Leave game">🚪</button>
+                            </div>
+                        </div>
+
+                        <div class="player-card" id="bottomPlayerCard">
+                            <div class="avatar" aria-hidden="true">👤</div>
+                            <div class="info">
+                                <h3 class="player-name">You</h3>
+                                <div class="captured-pieces" id="bottomCaptured" aria-label="Your captured pieces">
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+
+                    <!-- Chess Board -->
+                    <div class="board-area">
+                        <div id="chessBoard" class="chess-board" role="grid" aria-label="Chess board"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Tips Modal -->
+        <div id="tipsModal" class="modal hidden" role="dialog" aria-labelledby="tipsModalTitle" aria-modal="true">
+            <div class="glass-card modal-content">
+                <button class="close-modal-btn" id="closeTipsBtn" aria-label="Close tips dialog">×</button>
+                <h3 id="tipsModalTitle">Chess Tips & Tricks 💡</h3>
+                <div class="tips-container">
+                    <div class="tip-card">
+                        <h4>Control the Center</h4>
+                        <p>Try to place your pawns and pieces in the center of the board (d4, d5, e4, e5). This gives
+                            you more mobility.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h4>Don't Bring the Queen Out Too Early</h4>
+                        <p>Your opponent can develop their pieces while attacking your Queen, gaining a tempo.</p>
+                    </div>
+                    <div class="tip-card">
+                        <h4>Castle Early</h4>
+                        <p>King safety is priority #1. Castling gets your King out of the center and connects your
+                            Rooks.</p>
+                    </div>
+                    <button id="nextTipBtn" class="btn btn-secondary small">Next Random Tip</button>
                 </div>
             </div>
         </div>
 
         <!-- Game Over Modal -->
-        <div id="gameOverModal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-icon" id="modalIcon">🏆</div>
-                <h2 id="gameOverTitle">Game Over!</h2>
-                <p id="gameOverMessage"></p>
-                <div class="modal-stats" id="modalStats"></div>
-                <div class="button-group">
-                    <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+        <div id="gameOverModal" class="modal hidden" role="dialog" aria-labelledby="gameOverTitle" aria-modal="true">
+            <div class="glass-card modal-content text-center">
+                <div class="modal-icon huge" id="modalIcon" aria-hidden="true">🏆</div>
+                <h2 id="gameOverTitle">Game Over</h2>
+                <p id="gameOverMessage">Checkmate!</p>
+                <div class="stats-grid" id="modalStats"></div>
+                <div class="modal-actions">
+                    <button id="playAgainBtn" class="btn btn-primary">Rematch</button>
                     <button id="backToMenuBtn" class="btn btn-secondary">Main Menu</button>
                 </div>
             </div>
         </div>
-        
-        <!-- New Game Request Modal -->
-        <div id="newGameModal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-icon">🔄</div>
-                <h2>New Game Request</h2>
-                <p id="newGameMessage"></p>
-                <div class="button-group">
-                    <button id="acceptNewGameBtn" class="btn btn-primary">✓ Accept</button>
-                    <button id="declineNewGameBtn" class="btn btn-danger">✗ Decline</button>
+
+        <!-- Notification/Request Modal -->
+        <div id="requestModal" class="modal hidden" role="dialog" aria-labelledby="requestTitle" aria-modal="true">
+            <div class="glass-card modal-content text-center">
+                <div class="modal-icon" id="requestIcon" aria-hidden="true">🔄</div>
+                <h3 id="requestTitle">New Game?</h3>
+                <p id="requestMessage">Opponent wants to restart.</p>
+                <div class="modal-actions">
+                    <button id="acceptRequestBtn" class="btn btn-success">Accept</button>
+                    <button id="declineRequestBtn" class="btn btn-danger">Decline</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="game.js"></script>
+    <!-- Load modules -->
+    <script src="game.js" defer></script>
 </body>
+
 </html>
