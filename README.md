@@ -6,7 +6,8 @@
 
 A real-time multiplayer Chess game where two players can play from different devices over the internet using WebSocket technology. Built with chess.js for accurate chess rules and move validation.
 
-> 📖 [Contributing Guide](CONTRIBUTING.md) • 📝 [Changelog](CHANGELOG.md) • 🐛 [Bug Fixes](BUG_FIXES.md)
+> 📖 [Contributing Guide](CONTRIBUTING.md) • 📝 [Changelog](CHANGELOG.md) • 🐛 [Bug Fixes](BUG_FIXES.md) • 🔒 [Security](SECURITY.md) • 📡 [API Docs](API.md)
+
 
 
 ## ✨ Features

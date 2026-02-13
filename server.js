@@ -1,3 +1,9 @@
+/**
+ * Chess Multiplayer Server
+ * Real-time chess game server using Socket.IO and chess.js
+ * @module server
+ */
+
 const express = require('express');
 const http = require('http');
 const { Server } = require("socket.io");
@@ -11,10 +17,22 @@ const io = new Server(server);
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Game rooms storage
+/**
+ * In-memory storage for active game rooms
+ * @type {Map<string, ChessRoom>}
+ */
 const rooms = new Map();
 
+/**
+ * Represents a chess game room with players and game state
+ * @class ChessRoom
+ */
 class ChessRoom {
+    /**
+     * Creates a new chess room
+     * @param {string} roomId - Unique identifier for the room
+     * @param {string|null} pin - Optional PIN for room security
+     */
     constructor(roomId, pin) {
         this.roomId = roomId;
         this.pin = pin; // Store the PIN
@@ -25,6 +43,12 @@ class ChessRoom {
         this.spectators = [];
     }
 
+    /**
+     * Adds a player to the room (or as spectator if full)
+     * @param {string} socketId - Socket ID of the player
+     * @param {string} playerName - Display name of the player
+     * @returns {{success: boolean, role: string, color?: string}} Join result
+     */
     addPlayer(socketId, playerName) {
         if (this.players.length >= 2) {
             // Add as spectator
@@ -42,11 +66,21 @@ class ChessRoom {
         return { success: true, role: 'player', color };
     }
 
+    /**
+     * Removes a player from the room
+     * @param {string} socketId - Socket ID of the player to remove
+     */
     removePlayer(socketId) {
         this.players = this.players.filter(p => p.socketId !== socketId);
         this.spectators = this.spectators.filter(s => s.socketId !== socketId);
     }
 
+    /**
+     * Attempts to make a chess move
+     * @param {string} color - Color of the player making the move ('white' or 'black')
+     * @param {Object} move - Chess move object {from, to, promotion}
+     * @returns {{success: boolean, error?: string, move?: Object}} Move result
+     */
     makeMove(color, move) {
         // Check if it's the player's turn
         const currentTurn = this.chess.turn() === 'w' ? 'white' : 'black';
@@ -78,6 +112,10 @@ class ChessRoom {
         }
     }
 
+    /**
+     * Gets the current game state
+     * @returns {Object} Complete game state including FEN, turn, status, etc.
+     */
     getGameState() {
         return {
             fen: this.chess.fen(),
@@ -95,6 +133,9 @@ class ChessRoom {
         };
     }
 
+    /**
+     * Resets the game to initial position
+     */
     reset() {
         this.chess.reset();
         this.gameOver = false;
