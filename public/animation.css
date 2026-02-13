@@ -1,0 +1,212 @@
+/* Knight's Tour Animation */
+:root {
+    --deco-board-size: min(400px, 80vw);
+    --deco-square-size: calc(var(--deco-board-size) / 8);
+    --deco-anim-duration: 12s;
+}
+
+.decorative-board-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--deco-board-size);
+    height: var(--deco-board-size);
+    z-index: -1;
+    opacity: 0.15;
+    /* Subtle background */
+    pointer-events: none;
+    filter: blur(1px);
+}
+
+.deco-board {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.deco-square {
+    position: absolute;
+    width: var(--deco-square-size);
+    height: var(--deco-square-size);
+    /* Border logic handled by background colors */
+}
+
+.deco-square.dark {
+    background-color: var(--board-dark);
+}
+
+.deco-square.light {
+    background-color: var(--board-light);
+}
+
+/* Ranks (Top position) */
+.deco-rank-8 {
+    top: 0;
+}
+
+.deco-rank-7 {
+    top: var(--deco-square-size);
+}
+
+.deco-rank-6 {
+    top: calc(var(--deco-square-size) * 2);
+}
+
+.deco-rank-5 {
+    top: calc(var(--deco-square-size) * 3);
+}
+
+.deco-rank-4 {
+    top: calc(var(--deco-square-size) * 4);
+}
+
+.deco-rank-3 {
+    top: calc(var(--deco-square-size) * 5);
+}
+
+.deco-rank-2 {
+    top: calc(var(--deco-square-size) * 6);
+}
+
+.deco-rank-1 {
+    top: calc(var(--deco-square-size) * 7);
+}
+
+/* Files (Left position) */
+.deco-file-a {
+    left: 0;
+}
+
+.deco-file-b {
+    left: var(--deco-square-size);
+}
+
+.deco-file-c {
+    left: calc(var(--deco-square-size) * 2);
+}
+
+.deco-file-d {
+    left: calc(var(--deco-square-size) * 3);
+}
+
+.deco-file-e {
+    left: calc(var(--deco-square-size) * 4);
+}
+
+.deco-file-f {
+    left: calc(var(--deco-square-size) * 5);
+}
+
+.deco-file-g {
+    left: calc(var(--deco-square-size) * 6);
+}
+
+.deco-file-h {
+    left: calc(var(--deco-square-size) * 7);
+}
+
+/* The Knight Piece */
+.deco-piece {
+    position: absolute;
+    width: var(--deco-square-size);
+    height: var(--deco-square-size);
+    z-index: 10;
+
+    /* Center the image */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    animation: galloping var(--deco-anim-duration) ease-in-out infinite;
+}
+
+.deco-piece img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+}
+
+/* Galloping Animation Keyframes */
+@keyframes galloping {
+    0% {
+        left: 0;
+        top: calc(var(--deco-square-size) * 7);
+    }
+
+    /* a1 */
+    8% {
+        left: calc(var(--deco-square-size) * 2);
+        top: calc(var(--deco-square-size) * 6);
+    }
+
+    /* c2 */
+    16% {
+        left: calc(var(--deco-square-size) * 3);
+        top: calc(var(--deco-square-size) * 4);
+    }
+
+    /* d4 */
+    24% {
+        left: calc(var(--deco-square-size) * 5);
+        top: calc(var(--deco-square-size) * 3);
+    }
+
+    /* f5 */
+    32% {
+        left: calc(var(--deco-square-size) * 7);
+        top: calc(var(--deco-square-size) * 2);
+    }
+
+    /* h6 */
+    40% {
+        left: calc(var(--deco-square-size) * 6);
+        top: 0;
+    }
+
+    /* g8 */
+    48% {
+        left: calc(var(--deco-square-size) * 5);
+        top: calc(var(--deco-square-size) * 2);
+    }
+
+    /* f6 */
+    56% {
+        left: calc(var(--deco-square-size) * 4);
+        top: calc(var(--deco-square-size) * 4);
+    }
+
+    /* e4 */
+    64% {
+        left: calc(var(--deco-square-size) * 3);
+        top: calc(var(--deco-square-size) * 6);
+    }
+
+    /* d2 */
+    72% {
+        left: var(--deco-square-size);
+        top: calc(var(--deco-square-size) * 7);
+    }
+
+    /* b1 */
+    80% {
+        left: 0;
+        top: calc(var(--deco-square-size) * 5);
+    }
+
+    /* a3 */
+    90% {
+        left: calc(var(--deco-square-size) * 2);
+        top: calc(var(--deco-square-size) * 6);
+    }
+
+    /* c2 (jump near end) */
+    100% {
+        left: 0;
+        top: calc(var(--deco-square-size) * 7);
+    }
+
+    /* a1 */
+}

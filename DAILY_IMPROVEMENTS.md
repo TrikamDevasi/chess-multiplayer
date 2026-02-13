@@ -62,9 +62,15 @@ Today's improvements focused on UX enhancements, bug fixes, code quality, and vi
 - Fixed layout issues where buttons were unstyled
 - **Impact**: Buttons now look consistent and properly sized
 
+### 11. UI: add Knight's Tour animation (08a4b2c)
+- Added decorative chess board to menu background
+- Implemented complex CSS animation for knight movement
+- Created dynamic board generation script
+- **Impact**: Stunning visual introduction deeply integrated with the theme
+
 ## Statistics
 
-- **Files Modified**: 10+
+- **Files Modified**: 15+
 - **Lines Changed**: 200+
 - **Bugs Fixed**: 2 (dark mode toggle, piece clicking)
 - **Typos Fixed**: 1

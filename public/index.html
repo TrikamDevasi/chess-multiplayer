@@ -22,6 +22,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="animation.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
         rel="stylesheet">
@@ -29,6 +30,7 @@
     <!-- Defer scripts to improve load time -->
     <script src="/socket.io/socket.io.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" defer></script>
+    <script src="bg-anim.js" defer></script>
 </head>
 
 <body>
@@ -64,6 +66,9 @@
 
             <!-- Menu Screen -->
             <section id="menuScreen" class="screen active" aria-label="Main menu">
+                <!-- Background Animation -->
+                <div id="decoBoard" class="decorative-board-container" aria-hidden="true"></div>
+
                 <div class="glass-card menu-card">
                     <div class="card-header">
                         <h2>Welcome Back</h2>
