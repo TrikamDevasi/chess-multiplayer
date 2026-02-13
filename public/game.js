@@ -702,10 +702,10 @@ function setupEventListeners() {
         showIntelligentTip();
     });
 
-    // Theme Toggle - FIXED
+    // Theme Toggle
     if (ui.themeCheckbox) {
         ui.themeCheckbox.addEventListener('change', (e) => {
-            const theme = e.target.checked ? 'light' : 'dark';
+            const theme = e.target.checked ? 'dark' : 'light';
             document.body.setAttribute('data-theme', theme);
             console.log('Theme changed to:', theme);
         });
