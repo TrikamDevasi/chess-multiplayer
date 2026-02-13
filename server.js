@@ -12,10 +12,44 @@ const { Chess } = require('chess.js');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+// Socket.IO with production-grade CORS and timeout settings
+const io = new Server(server, {
+    cors: {
+        origin: process.env.NODE_ENV === 'production'
+            ? ['https://chess-multiplayer-mfbl.onrender.com']
+            : '*',
+        methods: ['GET', 'POST'],
+        credentials: true
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    transports: ['websocket', 'polling']
+});
+
+// Connection error logging
+io.engine.on('connection_error', (err) => {
+    console.error(`[Connection Error] ${err.code}: ${err.message}`);
+    console.error(`Request: ${err.req?.url || 'unknown'}`);
+});
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Health check routes for monitoring
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(process.uptime()),
+        rooms: rooms.size,
+        connections: io.engine.clientsCount
+    });
+});
 
 /**
  * In-memory storage for active game rooms
@@ -302,6 +336,25 @@ function generateRoomId() {
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    console.log(`Chess server is running on http://localhost:${PORT}`);
+    console.log(`[Server] Running on port ${PORT}`);
+    console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`[Server] Health check: http://localhost:${PORT}/health`);
+});
+
+// Graceful shutdown for production
+process.on('SIGTERM', () => {
+    console.log('[Server] SIGTERM received, closing gracefully...');
+    server.close(() => {
+        console.log('[Server] Closed all connections');
+        process.exit(0);
+    });
+});
+
+process.on('SIGINT', () => {
+    console.log('\n[Server] SIGINT received, closing gracefully...');
+    server.close(() => {
+        console.log('[Server] Closed all connections');
+        process.exit(0);
+    });
 });
 
