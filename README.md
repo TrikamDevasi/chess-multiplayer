@@ -1,6 +1,13 @@
 # ♟️ Chess Online Multiplayer
 
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Node Version](https://img.shields.io/badge/node-%3E%3D14.0.0-brightgreen.svg)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+
 A real-time multiplayer Chess game where two players can play from different devices over the internet using WebSocket technology. Built with chess.js for accurate chess rules and move validation.
+
+> 📖 [Contributing Guide](CONTRIBUTING.md) • 📝 [Changelog](CHANGELOG.md) • 🐛 [Bug Fixes](BUG_FIXES.md)
+
 
 ## ✨ Features
 
