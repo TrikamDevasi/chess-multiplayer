@@ -22,7 +22,7 @@ export function checkUrlParams() {
  */
 export function showRandomTip() {
     const tips = [
-        "Control the Center: The center squares (d4, d5, e4, e4, e5) are the most important.",
+        "Control the Center: The center squares (d4, d5, e4, e5) are the most important.",
         "Develop Pieces: Get your Knights and Bishops out before moving the Queen.",
         "King Safety: Castle early to protect your King.",
         "Don't Blunder: Always check if your piece is safe before moving.",
