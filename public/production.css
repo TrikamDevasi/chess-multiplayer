@@ -1,0 +1,122 @@
+/* === CONNECTION STATUS ENHANCEMENTS === */
+.status-indicator.connecting,
+.status-indicator.reconnecting {
+    background: #f59e0b;
+    animation: statusPulse 1.5s ease-in-out infinite;
+}
+
+.status-indicator.disconnected,
+.status-indicator.failed,
+.status-indicator.error {
+    background: var(--danger-color);
+}
+
+.status-indicator.reconnected {
+    background: var(--success-color);
+    animation: successFlash 1s ease;
+}
+
+@keyframes statusPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.9);
+    }
+}
+
+@keyframes successFlash {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+}
+
+/* Loading Spinner */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: var(--accent-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* === MOBILE RESPONSIVENESS=== */
+
+/* Larger touch targets on mobile */
+@media (max-width: 768px) {
+    .square {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .piece {
+        width: 90%;
+        height: 90%;
+    }
+
+    .btn {
+        min-height: 48px;
+        font-size: 1.1rem;
+        padding: 14px 28px;
+    }
+
+    .glass-card {
+        margin: 10px;
+        padding: 20px;
+    }
+
+    .menu-card {
+        padding: 30px 20px;
+    }
+
+    .status-toast {
+        top: 70px;
+        right: 10px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Remove hover effects on touch devices */
+@media (hover: none) {
+    .square:hover {
+        background-color: inherit !important;
+    }
+
+    .btn:hover:not(:disabled) {
+        transform: none;
+        box-shadow: var(--shadow);
+    }
+
+    .mode-card:hover {
+        transform: none;
+    }
+}
+
+/* Small mobile screens */
+@media (max-width: 480px) {
+    .chess-board {
+        width: min(98vw, 98vh, 500px);
+        height: min(98vw, 98vh, 500px);
+    }
+
+    .btn {
+        font-size: 1rem;
+        padding: 12px 20px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+}
