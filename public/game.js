@@ -725,13 +725,55 @@ function setupEventListeners() {
 function setupSocketListeners() {
     if (!socket) return;
 
-    socket.on('connect', () => updateConnectionStatus('connected'));
-    socket.on('disconnect', () => updateConnectionStatus('disconnected'));
+    let reconnectAttempts = 0;
+
+    // Enhanced connection handlers
+    socket.on('connect', () => {
+        reconnectAttempts = 0;
+        updateConnectionStatus('connected');
+        console.log('[Socket] Connected');
+
+        // Attempt rejoin if was in a room
+        const savedRoom = sessionStorage.getItem('currentRoomId');
+        if (savedRoom && currentRoomId) {
+            console.log(`[Socket] Reconnected - was in room ${savedRoom}`);
+        }
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.log('[Socket] Disconnected:', reason);
+        updateConnectionStatus('disconnected');
+    });
+
+    socket.on('reconnect_attempt', (attempt) => {
+        reconnectAttempts = attempt;
+        console.log(`[Socket] Reconnect attempt ${attempt}/5`);
+        updateConnectionStatus('reconnecting', attempt);
+    });
+
+    socket.on('reconnect_failed', () => {
+        console.error('[Socket] Reconnection failed');
+        updateConnectionStatus('failed');
+    });
+
+    socket.on('reconnect', (attemptNumber) => {
+        console.log('[Socket] Reconnected after', attemptNumber, 'attempts');
+        updateConnectionStatus('reconnected');
+        setTimeout(() => updateConnectionStatus('connected'), 2000);
+    });
+
+    socket.on('connect_error', (error) => {
+        console.error('[Socket] Connection error:', error.message);
+        updateConnectionStatus('error');
+    });
 
     socket.on('room_created', (data) => {
         currentRoomId = data.roomId;
         playerColor = data.color;
         isSpectator = data.role === 'spectator';
+
+        // Save for reconnection
+        sessionStorage.setItem('currentRoomId', currentRoomId);
 
         if (ui.displayRoomId) ui.displayRoomId.textContent = currentRoomId;
         if (ui.displayPin) ui.displayPin.textContent = data.pin || 'None';
@@ -812,9 +854,16 @@ function init() {
         return;
     }
 
-    // Initialize Socket.IO
+    // Initialize Socket.IO with reconnection configuration
     if (typeof io !== 'undefined') {
-        socket = io();
+        socket = io({
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 10000,
+            timeout: 20000,
+            transports: ['websocket', 'polling']
+        });
     } else {
         console.error('Socket.IO not loaded');
     }
