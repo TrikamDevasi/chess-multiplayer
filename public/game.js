@@ -809,9 +809,14 @@ function setupSocketListeners() {
     });
 
     socket.on('game_update', (data) => {
+        console.log('[Client] Game updated. Turn:', data.gameState.turn);
         updateGameState(data.gameState);
         updateBoard(data.gameState.fen, playerColor === PLAYER_COLORS.BLACK);
         updateGameInfo(data.gameState);
+
+        // Clear selection after move
+        selectedSquare = null;
+        legalMoves = [];
     });
 
     socket.on('game_reset', (data) => {
@@ -833,7 +838,9 @@ function setupSocketListeners() {
 
     socket.on('legal_moves', (data) => {
         legalMoves = data.moves;
-        if (chess) {
+        console.log('[Client] Received legal moves for', data.square, ':', data.moves.length, 'moves');
+        // In multiplayer, update board to show legal move indicators
+        if (gameMode === GAME_MODES.HUMAN && chess) {
             updateBoard(chess.fen(), playerColor === PLAYER_COLORS.BLACK);
         }
     });
