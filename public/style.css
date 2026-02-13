@@ -519,6 +519,23 @@ input:focus {
     font-size: 0.9rem;
 }
 
+.btn-lg {
+    padding: 16px 32px;
+    font-size: 1.1rem;
+}
+
+.small {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+}
+
+.btn-icon.small {
+    padding: 4px;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+}
+
 /* Game Screen Layout */
 .game-layout {
     display: flex;
