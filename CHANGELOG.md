@@ -7,13 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Chess piece click handling - pieces now respond properly to clicks
+- Added pointer-events fix to ensure clicks register on squares correctly
+
 ### Added
 - CONTRIBUTING.md with comprehensive contribution guidelines
 - Enhanced package.json with repository metadata and additional keywords
 - CHANGELOG.md to track project changes
+- .env.example for environment configuration template
+- Hover effects on chess squares for better user feedback
 
 ### Improved
 - Project documentation structure for better maintainability
+- Chess board interactivity and visual feedback
 
 ## [1.0.0] - 2026-02-13
 

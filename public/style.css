@@ -623,7 +623,13 @@ input:focus {
     align-items: center;
     justify-content: center;
     position: relative;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
     /* Context for coordinates and pieces */
+}
+
+.square:hover {
+    filter: brightness(1.1);
 }
 
 .square.light {
@@ -679,12 +685,14 @@ input:focus {
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    cursor: grab;
+    cursor: pointer;
     transition: transform 0.2s;
+    pointer-events: none;
+    /* Allow clicks to pass through to the square */
 }
 
 .piece:active {
-    cursor: grabbing;
+    cursor: pointer;
 }
 
 /* White Pieces */
