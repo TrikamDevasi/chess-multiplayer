@@ -53,6 +53,15 @@ Today's improvements focused on UX enhancements, bug fixes, code quality, and vi
 - Added hover state
 - **Impact**: More premium, polished glass morphism effect
 
+### 9. Fix: bot mode API compatibility (48b93a2)
+- Replaced `isGameOver()` with `game_over()` for chess.js v0.10.3
+- **Impact**: **MAJOR FIX** - Bot mode now works perfectly
+
+### 10. UI: add button size utilities (781c5fd)
+- Added `.btn-lg` and `.small` classes
+- Fixed layout issues where buttons were unstyled
+- **Impact**: Buttons now look consistent and properly sized
+
 ## Statistics
 
 - **Files Modified**: 10+
