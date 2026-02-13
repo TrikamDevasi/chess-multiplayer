@@ -446,22 +446,35 @@ function startBotGame() {
 }
 
 function handleSquareClick(squareId) {
-    if (!chess || isSpectator) return;
+    console.log('Square clicked:', squareId, 'Mode:', gameMode, 'Chess exists:', !!chess);
+
+    if (!chess || isSpectator) {
+        console.log('Exiting: chess missing or spectator mode');
+        return;
+    }
 
     if (gameMode === GAME_MODES.BOT) {
+        console.log('Bot mode - player color:', playerColor, 'turn:', chess.turn());
         const turnColor = chess.turn() === 'w' ? PLAYER_COLORS.WHITE : PLAYER_COLORS.BLACK;
-        if (turnColor !== playerColor) return;
+        if (turnColor !== playerColor) {
+            console.log('Not your turn');
+            return;
+        }
 
         if (selectedSquare === null) {
             const piece = chess.get(squareId);
+            console.log('No square selected. Piece at', squareId, ':', piece);
             if (piece && ((piece.color === 'w' && playerColor === PLAYER_COLORS.WHITE) || (piece.color === 'b' && playerColor === PLAYER_COLORS.BLACK))) {
                 selectedSquare = squareId;
                 legalMoves = chess.moves({ square: squareId, verbose: true });
+                console.log('Selected', squareId, 'Legal moves:', legalMoves.length);
                 updateBoard(chess.fen(), playerColor === PLAYER_COLORS.BLACK);
             }
         } else {
+            console.log('Square already selected:', selectedSquare, 'Trying to move to:', squareId);
             const move = legalMoves.find(m => m.to === squareId);
             if (move) {
+                console.log('Making move:', move);
                 chess.move({ from: selectedSquare, to: squareId, promotion: 'q' });
                 selectedSquare = null;
                 legalMoves = [];
@@ -481,10 +494,12 @@ function handleSquareClick(squareId) {
                 if (piece && ((piece.color === 'w' && playerColor === PLAYER_COLORS.WHITE) || (piece.color === 'b' && playerColor === PLAYER_COLORS.BLACK))) {
                     selectedSquare = squareId;
                     legalMoves = chess.moves({ square: squareId, verbose: true });
+                    console.log('Re-selected', squareId);
                     updateBoard(chess.fen(), playerColor === PLAYER_COLORS.BLACK);
                 } else {
                     selectedSquare = null;
                     legalMoves = [];
+                    console.log('Deselected');
                     updateBoard(chess.fen(), playerColor === PLAYER_COLORS.BLACK);
                 }
             }
