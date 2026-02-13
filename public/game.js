@@ -480,13 +480,13 @@ function handleSquareClick(squareId) {
                 legalMoves = [];
                 updateGameState({
                     fen: chess.fen(),
-                    isGameOver: chess.isGameOver(),
+                    isGameOver: chess.game_over(),
                     moveHistory: chess.history({ verbose: true }),
                     turn: chess.turn() === 'w' ? PLAYER_COLORS.WHITE : PLAYER_COLORS.BLACK
                 });
                 updateBoard(chess.fen(), playerColor === PLAYER_COLORS.BLACK);
 
-                if (!chess.isGameOver()) {
+                if (!chess.game_over()) {
                     setTimeout(makeBotMove, CONFIG.BOT_MOVE_DELAY);
                 }
             } else {
@@ -534,7 +534,7 @@ function handleSquareClick(squareId) {
 }
 
 function makeBotMove() {
-    if (!chess || chess.isGameOver()) return;
+    if (!chess || chess.game_over()) return;
 
     const moves = chess.moves({ verbose: true });
     let move;
@@ -550,7 +550,7 @@ function makeBotMove() {
     chess.move(move);
     updateGameState({
         fen: chess.fen(),
-        isGameOver: chess.isGameOver(),
+        isGameOver: chess.game_over(),
         moveHistory: chess.history({ verbose: true }),
         turn: chess.turn() === 'w' ? PLAYER_COLORS.WHITE : PLAYER_COLORS.BLACK
     });
